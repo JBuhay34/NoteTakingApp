@@ -12,15 +12,32 @@
         android:padding="16dp"
         app:cardBackgroundColor="@color/cardview_dark_background">
 
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:orientation="vertical"
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/the_note_title"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="title"
+            android:padding="8dp"
+            android:textSize="20sp"
+            android:textColor="@color/colorWhite"/>
+
         <TextView
             android:id="@+id/the_note_description"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:text="adasd"
             android:padding="8dp"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textColor="@color/colorWhite"/>
 
+        </LinearLayout>
 
     </android.support.v7.widget.CardView>
 

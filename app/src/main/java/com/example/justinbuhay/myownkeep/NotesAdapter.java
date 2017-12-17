@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import static android.R.attr.description;
 
@@ -17,23 +18,25 @@ import static android.R.attr.description;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder> {
 
-    private LinkedList<String> mDescription;
+    private List<Note> mNotes;
     private Context mContext;
 
-    public NotesAdapter(Context context, LinkedList<String> description){
+    public NotesAdapter(Context context, List<Note> notes){
 
-        mDescription = description;
+        mNotes = notes;
         mContext = context;
 
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView mNotesTextView;
+        public TextView mNoteTitleTextView;
+        public TextView mNoteDescriptionTextView;
 
         public MyViewHolder(View v){
             super(v);
-            mNotesTextView = (TextView) v.findViewById(R.id.the_note_description);
+            mNoteTitleTextView = (TextView) v.findViewById(R.id.the_note_title);
+            mNoteDescriptionTextView = (TextView) v.findViewById(R.id.the_note_description);
         }
     }
 
@@ -50,13 +53,14 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        holder.mNotesTextView.setText(mDescription.get(position));
+        holder.mNoteTitleTextView.setText(mNotes.get(position).getNoteTitle());
+        holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
 
     }
 
 
     @Override
     public int getItemCount() {
-        return mDescription.size();
+        return mNotes.size();
     }
 }
