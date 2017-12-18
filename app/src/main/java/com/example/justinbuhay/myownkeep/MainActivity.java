@@ -8,21 +8,26 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 
 import java.util.LinkedList;
 
+import static android.R.attr.name;
 import static android.os.Build.VERSION_CODES.N;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final int NEW_NOTE_REQUEST = 1;
+    public static final int DELETE_NOTE_REQUEST = 2;
+    private final String LOG_TAG = MainActivity.class.getName();
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
-    private RecyclerView.Adapter mAdapter;
+    private NotesAdapter mAdapter;
     private Button addNoteButton;
-
     private KeepReaderDbHelper databaseHelper;
 
     @Override
@@ -47,11 +52,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         mAdapter = new NotesAdapter(this, databaseHelper.getAllNotes());
+        mAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, String noteTitle, String noteDescription) {
+                if (position != RecyclerView.NO_POSITION) {
+                    Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
+                    i.putExtra("position", position);
+                    i.putExtra("titleResult", noteTitle);
+                    i.putExtra("noteDescriptionResult", noteDescription);
+                    startActivityForResult(i, DELETE_NOTE_REQUEST);
+
+                }
+            }
+        });
         mRecyclerView.setAdapter(mAdapter);
 
-    }
 
-    public static final int NEW_NOTE_REQUEST = 1;
+    }
 
     @Override
     public void onClick(View view) {
@@ -64,17 +81,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onResume() {
+
+        super.onResume();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(requestCode == NEW_NOTE_REQUEST){
-            if(resultCode == RESULT_OK){
+        if (requestCode == NEW_NOTE_REQUEST) {
+            if (resultCode == RESULT_OK) {
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
                 Note newNote = new Note(data.getStringExtra("titleResult"), data.getStringExtra("noteDescriptionResult"));
                 databaseHelper.addNote(newNote);
 
-                mAdapter = new NotesAdapter(this, databaseHelper.getAllNotes());
-                mRecyclerView.setAdapter(mAdapter);
+                mAdapter.setmNotes(databaseHelper.getAllNotes());
+            }
+        } else if (requestCode == DELETE_NOTE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                int position = data.getIntExtra("position", -1);
+                databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
+                mAdapter.setmNotes(databaseHelper.getAllNotes());
+
             }
         }
     }

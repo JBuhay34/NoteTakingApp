@@ -1,16 +1,19 @@
 package com.example.justinbuhay.myownkeep;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import static android.R.attr.description;
+import static com.example.justinbuhay.myownkeep.MainActivity.NEW_NOTE_REQUEST;
 
 /**
  * Created by justinbuhay on 11/22/17.
@@ -20,6 +23,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
     private List<Note> mNotes;
     private Context mContext;
+    private OnItemClickListener mListener;
 
     public NotesAdapter(Context context, List<Note> notes){
 
@@ -28,16 +32,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder{
-
-        public TextView mNoteTitleTextView;
-        public TextView mNoteDescriptionTextView;
-
-        public MyViewHolder(View v){
-            super(v);
-            mNoteTitleTextView = (TextView) v.findViewById(R.id.the_note_title);
-            mNoteDescriptionTextView = (TextView) v.findViewById(R.id.the_note_description);
-        }
+    // Define the method that allows the parent activity or fragment to define the listener
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.mListener = listener;
     }
 
     @Override
@@ -58,9 +55,43 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
     }
 
+    public void setmNotes(List<Note> mNotes) {
+        this.mNotes = mNotes;
+        this.notifyDataSetChanged();
+    }
 
     @Override
     public int getItemCount() {
         return mNotes.size();
+    }
+
+    // Define the listener interface
+    public interface OnItemClickListener {
+        void onItemClick(View itemView, int position, String noteTitle, String noteDescription);
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder {
+
+        public TextView mNoteTitleTextView;
+        public TextView mNoteDescriptionTextView;
+
+        public MyViewHolder(View v) {
+            super(v);
+
+            mNoteTitleTextView = v.findViewById(R.id.the_note_title);
+            mNoteDescriptionTextView = v.findViewById(R.id.the_note_description);
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Triggers click upwards to the adapter on click
+                    if (mListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            mListener.onItemClick(itemView, position, mNoteTitleTextView.getText().toString(), mNoteDescriptionTextView.getText().toString());
+                        }
+                    }
+                }
+            });
+        }
     }
 }
