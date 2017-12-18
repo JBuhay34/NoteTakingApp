@@ -18,6 +18,7 @@ import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import java.util.LinkedList;
 
 import static android.R.attr.name;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 import static android.os.Build.VERSION_CODES.N;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -71,6 +72,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        intent.putExtra("requestCode", requestCode);
+        super.startActivityForResult(intent, requestCode);
+    }
+
+    @Override
     public void onClick(View view) {
         switch(view.getId()) {
             case R.id.add_note_button:
@@ -101,8 +108,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
                 int position = data.getIntExtra("position", -1);
-                databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
-                mAdapter.setmNotes(databaseHelper.getAllNotes());
+                if (data.getBooleanExtra("update", true) == false) {
+                    Log.i(LOG_TAG, "deleted note");
+
+                    databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
+                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                } else {
+                    String title = data.getStringExtra("titleResult");
+                    String description = data.getStringExtra("noteDescriptionResult");
+                    Log.i(LOG_TAG, title + description);
+
+                    databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
+                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                }
 
             }
         }

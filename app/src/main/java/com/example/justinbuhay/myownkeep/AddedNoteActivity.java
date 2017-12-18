@@ -44,6 +44,7 @@ public class AddedNoteActivity extends AppCompatActivity {
 
                     Intent i = new Intent();
                     i.putExtra("position", notePosition);
+                    i.putExtra("update", false);
                     setResult(RESULT_OK, i);
                     finish();
                 }
@@ -84,7 +85,13 @@ public class AddedNoteActivity extends AppCompatActivity {
 
                 returnedInformationIntent.putExtra("titleResult", noteTitle.getText().toString());
                 returnedInformationIntent.putExtra("noteDescriptionResult", noteDescription.getText().toString());
-                setResult(Activity.RESULT_OK, returnedInformationIntent);
+                if (getIntent().getIntExtra("requestCode", -1) == MainActivity.NEW_NOTE_REQUEST) {
+                    setResult(Activity.RESULT_OK, returnedInformationIntent);
+                } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.DELETE_NOTE_REQUEST) {
+                    returnedInformationIntent.putExtra("position", notePosition);
+                    returnedInformationIntent.putExtra("update", true);
+                    setResult(Activity.RESULT_OK, returnedInformationIntent);
+                }
                 finish();
             }
         }

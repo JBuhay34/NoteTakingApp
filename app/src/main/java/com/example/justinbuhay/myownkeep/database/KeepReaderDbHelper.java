@@ -106,6 +106,16 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
     }
 
+    public int updateNote(Note noteToUpdate, String noteTitle, String noteDescription) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(NoteTakingEntry.COLUMN_NOTE_TITLE, noteTitle);
+        values.put(NoteTakingEntry.COLUMN_ACTUAL_NOTE, noteDescription);
+
+        return db.update(NoteTakingEntry.TABLE_NAME, values, NoteTakingEntry._ID + " = ?", new String[]{String.valueOf(noteToUpdate.getNoteID())});
+    }
+
     public List<Note> getAllNotes(){
         List<Note> notes = new LinkedList<>();
 
@@ -119,8 +129,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                     String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
                     String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
                     int id = cursor.getInt(cursor.getColumnIndex(NoteTakingEntry._ID));
-                    Log.i("KeepReaderDbHelper.java", id + " ");
-
 
                     Note newNote = new Note(noteTitle, noteDescription, id);
 
