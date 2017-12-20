@@ -178,7 +178,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                 notes.add(new Note(noteTitle, noteDescription));
             } while (cursor.moveToNext()); // Returns true or false
             cursor.close();
-        } // You should add some handling of null case. Right now, nothing happens.
+        }
 
 
         return notes;

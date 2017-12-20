@@ -12,10 +12,14 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+
+import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final int NEW_NOTE_REQUEST = 1;
@@ -26,18 +30,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NotesAdapter mAdapter;
     private Button addNoteButton;
     private KeepReaderDbHelper databaseHelper;
+    private TextView noNotesFound;
+    private MenuItem searchItem;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the options menu from XML
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        searchItem = menu.findItem(R.id.search);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
+                (SearchView) searchItem.getActionView();
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
 
@@ -53,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mRecyclerView = (RecyclerView) findViewById(R.id.notes_recycler_view);
         addNoteButton = (Button) findViewById(R.id.add_note_button);
+        noNotesFound = (TextView) findViewById(R.id.no_notes_found_text_view);
+
         addNoteButton.setOnClickListener(this);
 
         // use this setting to improve performance if you know that changes
@@ -88,8 +97,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String queryString = intent.getStringExtra(SearchManager.QUERY);
             Cursor c = databaseHelper.getWordMatches(queryString);
-            
-            mAdapter.setmNotes(databaseHelper.getQueriedNotes(c));
+
+            LinkedList<Note> notesLinkedList = databaseHelper.getQueriedNotes(c);
+            mAdapter.setmNotes(notesLinkedList);
+            if (notesLinkedList.size() <= 0) {
+                noNotesFound.setVisibility(View.VISIBLE);
+            } else {
+
+                noNotesFound.setVisibility(View.GONE);
+            }
+
 
         }
 
@@ -130,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 databaseHelper.addNote(newNote);
 
                 mAdapter.setmNotes(databaseHelper.getAllNotes());
+                noNotesFound.setVisibility(View.GONE);
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -139,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
                     mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    noNotesFound.setVisibility(View.GONE);
                 } else {
                     String title = data.getStringExtra("titleResult");
                     String description = data.getStringExtra("noteDescriptionResult");
@@ -146,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
                     mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    noNotesFound.setVisibility(View.GONE);
                 }
 
             }
