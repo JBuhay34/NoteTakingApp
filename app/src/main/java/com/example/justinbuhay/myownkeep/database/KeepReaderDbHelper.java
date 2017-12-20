@@ -5,21 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.support.design.widget.TabLayout;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.justinbuhay.myownkeep.MainActivity;
 import com.example.justinbuhay.myownkeep.Note;
 import com.example.justinbuhay.myownkeep.database.NoteTakingContract.NoteTakingEntry;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-import static android.os.Build.VERSION_CODES.M;
 
 /**
  * Created by justinbuhay on 11/27/17.
@@ -116,6 +111,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
         return db.update(NoteTakingEntry.TABLE_NAME, values, NoteTakingEntry._ID + " = ?", new String[]{String.valueOf(noteToUpdate.getNoteID())});
     }
 
+
     public List<Note> getAllNotes(){
         List<Note> notes = new LinkedList<>();
 
@@ -136,7 +132,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                 } while(cursor.moveToNext());
             }
         } catch (Exception e) {
-            Log.d(TAG, "Error while trying to get posts from database");
+            Log.e("KeepReaderDbHelper", "Error while trying to get posts from database");
         } finally {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
@@ -144,5 +140,47 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
         }
         return notes;
 
+    }
+
+
+    public Cursor getWordMatches(String queryString) {
+        String[] columns = new String[]{NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE, NoteTakingContract.NoteTakingEntry.COLUMN_ACTUAL_NOTE};
+        queryString = "%" + queryString + "%";
+        String where = NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE + " LIKE ?";
+        String[] whereArgs = new String[]{queryString};
+
+        Cursor cursor = null;
+
+        try {
+            cursor = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where, whereArgs, null, null, null);
+
+        } catch (Exception e) {
+            Log.d("KeepReaderDbHelper", "SEARCH EXCEPTION! " + e);
+        }
+
+        return cursor;
+    }
+
+
+    public LinkedList<Note> getQueriedNotes(Cursor cursor) {
+        LinkedList<Note> notes = new LinkedList<>();
+
+        // Only process a non-null cursor with rows.
+        if (cursor != null && cursor.getCount() > 0) {
+            // You must move the cursor to the first item.
+            cursor.moveToFirst();
+            // Iterate over the cursor, while there are entries.
+            do {
+                String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
+                String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
+                Log.e("KeepReaderDbHelper", "NoteTitle is " + noteTitle);
+                Log.e("KeepReaderDbHelper", "NoteDescription is " + noteDescription);
+                notes.add(new Note(noteTitle, noteDescription));
+            } while (cursor.moveToNext()); // Returns true or false
+            cursor.close();
+        } // You should add some handling of null case. Right now, nothing happens.
+
+
+        return notes;
     }
 }
