@@ -173,8 +173,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             do {
                 String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
                 String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
-                Log.e("KeepReaderDbHelper", "NoteTitle is " + noteTitle);
-                Log.e("KeepReaderDbHelper", "NoteDescription is " + noteDescription);
                 notes.add(new Note(noteTitle, noteDescription));
             } while (cursor.moveToNext()); // Returns true or false
             cursor.close();
