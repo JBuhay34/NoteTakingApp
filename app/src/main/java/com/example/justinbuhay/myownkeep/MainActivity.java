@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private KeepReaderDbHelper databaseHelper;
     private TextView noNotesFound;
     private MenuItem searchItem;
+    private SearchView searchView;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -43,11 +44,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Associate searchable configuration with the SearchView
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) searchItem.getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
+        searchView = (SearchView) searchItem.getActionView();
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (searchView.getWidth() > 0) {
+
+                    doMyOwnSearch(newText);
+
+                }
+                return false;
+            }
+        });
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
         return true;
 
     }
@@ -96,20 +115,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String queryString = intent.getStringExtra(SearchManager.QUERY);
-            Cursor c = databaseHelper.getWordMatches(queryString);
 
-            LinkedList<Note> notesLinkedList = databaseHelper.getQueriedNotes(c);
-            mAdapter.setmNotes(notesLinkedList);
-            if (notesLinkedList.size() <= 0) {
-                noNotesFound.setVisibility(View.VISIBLE);
-            } else {
-
-                noNotesFound.setVisibility(View.GONE);
-            }
+            doMyOwnSearch(queryString);
 
 
         }
 
+
+    }
+
+    public void doMyOwnSearch(String queryString) {
+        Cursor c = databaseHelper.getWordMatches(queryString);
+
+        LinkedList<Note> notesLinkedList = databaseHelper.getQueriedNotes(c);
+        mAdapter.setmNotes(notesLinkedList);
+        if (notesLinkedList.size() <= 0) {
+            noNotesFound.setVisibility(View.VISIBLE);
+        } else {
+
+            noNotesFound.setVisibility(View.GONE);
+        }
 
     }
 
@@ -132,8 +157,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onResume() {
-
         super.onResume();
+
     }
 
     @Override
