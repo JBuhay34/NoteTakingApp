@@ -111,15 +111,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView.setAdapter(mAdapter);
 
 
-        // Get the intent, verify the action and get the query
-        Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String queryString = intent.getStringExtra(SearchManager.QUERY);
-
-            doMyOwnSearch(queryString);
-
-
-        }
 
 
     }

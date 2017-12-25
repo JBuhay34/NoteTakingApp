@@ -146,7 +146,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
     public Cursor getWordMatches(String queryString) {
         String[] columns = new String[]{NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE, NoteTakingContract.NoteTakingEntry.COLUMN_ACTUAL_NOTE};
         queryString = "%" + queryString + "%";
-        String where = NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE + " LIKE ?";
+        String where = NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE + " OR " + NoteTakingEntry.COLUMN_ACTUAL_NOTE + " LIKE ?";
         String[] whereArgs = new String[]{queryString};
 
         Cursor cursor = null;
@@ -160,6 +160,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
         return cursor;
     }
+
 
 
     public LinkedList<Note> getQueriedNotes(Cursor cursor) {
