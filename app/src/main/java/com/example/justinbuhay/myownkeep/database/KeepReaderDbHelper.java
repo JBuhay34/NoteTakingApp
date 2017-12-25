@@ -3,6 +3,7 @@ package com.example.justinbuhay.myownkeep.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -146,19 +147,32 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
     public Cursor getWordMatches(String queryString) {
         String[] columns = new String[]{NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE, NoteTakingContract.NoteTakingEntry.COLUMN_ACTUAL_NOTE};
         queryString = "%" + queryString + "%";
-        String where = NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE + " OR " + NoteTakingEntry.COLUMN_ACTUAL_NOTE + " LIKE ?";
+
+        String where1 = NoteTakingContract.NoteTakingEntry.COLUMN_NOTE_TITLE + " LIKE ?";
+        String where2 = NoteTakingEntry.COLUMN_ACTUAL_NOTE + " LIKE ?";
+
         String[] whereArgs = new String[]{queryString};
 
-        Cursor cursor = null;
+
+
+        Cursor cursor1 = null;
+        Cursor cursor2 = null;
+
 
         try {
-            cursor = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where, whereArgs, null, null, null);
+            cursor1 = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where1, whereArgs, null, null, null);
+            cursor2 = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where2, whereArgs, null, null, null);
+            MergeCursor merged = new MergeCursor(new Cursor[]{cursor1, cursor2});
+
+
+            return merged;
+
 
         } catch (Exception e) {
             Log.d("KeepReaderDbHelper", "SEARCH EXCEPTION! " + e);
         }
+        return null;
 
-        return cursor;
     }
 
 
