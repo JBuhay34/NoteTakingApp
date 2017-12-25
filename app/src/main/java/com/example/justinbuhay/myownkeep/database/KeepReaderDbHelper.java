@@ -120,6 +120,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(NOTES_SELECT_QUERY, null);
+        Log.e("KeepReaderDbHelper", "getAllNotes is shown");
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -155,11 +156,12 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
 
 
-        Cursor cursor1 = null;
-        Cursor cursor2 = null;
 
 
         try {
+
+            Cursor cursor1;
+            Cursor cursor2;
             cursor1 = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where1, whereArgs, null, null, null);
             cursor2 = this.getReadableDatabase().query(NoteTakingContract.NoteTakingEntry.TABLE_NAME, columns, where2, whereArgs, null, null, null);
             MergeCursor merged = new MergeCursor(new Cursor[]{cursor1, cursor2});
@@ -179,6 +181,8 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
     public LinkedList<Note> getQueriedNotes(Cursor cursor) {
         LinkedList<Note> notes = new LinkedList<>();
+        // Make sure there are no duplicates.
+        LinkedList<Note> noteTitles = new LinkedList<>();
 
         // Only process a non-null cursor with rows.
         if (cursor != null && cursor.getCount() > 0) {
@@ -188,7 +192,18 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             do {
                 String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
                 String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
-                notes.add(new Note(noteTitle, noteDescription));
+
+                boolean isItAlreadyThere = false;
+                for (Note title : noteTitles) {
+                    if (noteTitle.equals(title.getNoteTitle()) && noteDescription.equals(title.getNoteDescription())) {
+                        isItAlreadyThere = true;
+                    }
+                }
+                Note newNote = new Note(noteTitle, noteDescription);
+                noteTitles.add(newNote);
+                if (!isItAlreadyThere) {
+                    notes.add(newNote);
+                }
             } while (cursor.moveToNext()); // Returns true or false
             cursor.close();
         }

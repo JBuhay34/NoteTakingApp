@@ -50,16 +50,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onQueryTextSubmit(String query) {
 
+                if (query.length() > 0 && searchView.getWidth() > 0) {
 
+                    doMyOwnSearch(query);
+
+                } else {
+                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    noNotesFound.setVisibility(View.GONE);
+                }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (searchView.getWidth() > 0) {
+                if (newText.length() > 0 && searchView.getWidth() > 0) {
 
                     doMyOwnSearch(newText);
+                    Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
+                } else {
+                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
             }
