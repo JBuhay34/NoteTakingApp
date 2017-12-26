@@ -18,12 +18,16 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final int NEW_NOTE_REQUEST = 1;
     public static final int DELETE_NOTE_REQUEST = 2;
+    private static final int RC_SIGN_IN = 123;
     private final String LOG_TAG = MainActivity.class.getName();
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView noNotesFound;
     private MenuItem searchItem;
     private SearchView searchView;
+    private FirebaseAuth mAuth;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -85,12 +90,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
+
         setContentView(R.layout.activity_main);
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.notes_recycler_view);
-        addNoteButton = (Button) findViewById(R.id.add_note_button);
-        noNotesFound = (TextView) findViewById(R.id.no_notes_found_text_view);
+        mRecyclerView = findViewById(R.id.notes_recycler_view);
+        addNoteButton = findViewById(R.id.add_note_button);
+        noNotesFound = findViewById(R.id.no_notes_found_text_view);
 
         addNoteButton.setOnClickListener(this);
 
@@ -121,10 +129,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         mRecyclerView.setAdapter(mAdapter);
 
-
+        //updateUI(mAuth.getCurrentUser());
 
 
     }
+
+    /*
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
+                    "User ID: " + user.getUid());
+        } else {
+            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
+                    "Error: sign in failed.");
+        }
+    }
+    */
 
     public void doMyOwnSearch(String queryString) {
         Cursor c = databaseHelper.getWordMatches(queryString);
@@ -195,6 +215,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     noNotesFound.setVisibility(View.GONE);
                 }
 
+            }
+        } else if (requestCode == RC_SIGN_IN) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if (resultCode == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                // ...
+            } else {
+                // Sign in failed, check response for error code
+                // ...
             }
         }
     }
