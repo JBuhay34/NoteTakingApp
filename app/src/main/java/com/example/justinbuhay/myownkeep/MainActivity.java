@@ -17,14 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
-import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -106,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFireStore = FirebaseFirestore.getInstance();
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
-        //mDocumentReference = mFireStore.document("notesData/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/notes");
+        mDocumentReference = mFireStore.document("mainData/user");
 
 
 
@@ -197,28 +193,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == RESULT_OK) {
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
-                Note newNote = new Note(data.getStringExtra("titleResult"), data.getStringExtra("noteDescriptionResult"));
-                databaseHelper.addNote(newNote);
+                final String titleResult = data.getStringExtra("titleResult");
+                final String noteDescription = data.getStringExtra("noteDescriptionResult");
 
                 Map<String, Object> noteToAdd = new HashMap<String, Object>();
-                noteToAdd.put(NOTE_TITLE, newNote.getNoteTitle());
-                noteToAdd.put(ACTUAL_NOTE, newNote.getNoteDescription());
-                mFireStore.collection("mainData").document("user").collection("noteCollection").add(noteToAdd).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                noteToAdd.put(NOTE_TITLE, titleResult);
+                noteToAdd.put(ACTUAL_NOTE, noteDescription);
+
+
+                mFireStore.collection("mainData").document("user").collection("noteCollection").add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Document created", Toast.LENGTH_SHORT).show();
-
-                        } else {
-                            Log.e(LOG_TAG, "HMMM");
-                            Toast.makeText(MainActivity.this, "Document not created", Toast.LENGTH_SHORT).show();
-
-                        }
+                    public void onSuccess(DocumentReference documentReference) {
+                        Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
+                        Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
+                        databaseHelper.addNote(newNote);
+                        mAdapter.setmNotes(databaseHelper.getAllNotes());
+                        noNotesFound.setVisibility(View.GONE);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(LOG_TAG, "Error adding document", e);
                     }
                 });
-
-                mAdapter.setmNotes(databaseHelper.getAllNotes());
-                noNotesFound.setVisibility(View.GONE);
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -234,22 +231,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String description = data.getStringExtra("noteDescriptionResult");
                     Log.i(LOG_TAG, title + description);
 
+
+                    Map<String, Object> noteToAdd = new HashMap<String, Object>();
+                    noteToAdd.put(NOTE_TITLE, title);
+                    noteToAdd.put(ACTUAL_NOTE, description);
+
+                    Log.e(LOG_TAG, databaseHelper.getAllNotes().get(position).getUniqueStorageID() + "WHATTT U NOO WORK");
+
+                    mDocumentReference.collection("noteCollection").document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
                     databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
                     mAdapter.setmNotes(databaseHelper.getAllNotes());
                     noNotesFound.setVisibility(View.GONE);
                 }
 
-            }
-        } else if (requestCode == RC_SIGN_IN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                // ...
-            } else {
-                // Sign in failed, check response for error code
-                // ...
             }
         }
     }
