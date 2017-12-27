@@ -50,6 +50,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     Log.d(TAG, "User Logged in: " + user.getEmail());
                     mStatusTextView.setVisibility(View.VISIBLE);
                     mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
+                    Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                    startActivity(intent);
                     Toast.makeText(SignInActivity.this, "Welcome: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d(TAG, "User Logged out.");
@@ -125,6 +127,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete: " + task.isSuccessful());
+
 
                     }
                 });

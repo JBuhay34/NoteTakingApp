@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,17 +17,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final int NEW_NOTE_REQUEST = 1;
     public static final int DELETE_NOTE_REQUEST = 2;
+    public static final String NOTE_TITLE = "notetitle";
+    public static final String ACTUAL_NOTE = "actualnote";
     private static final int RC_SIGN_IN = 123;
     private final String LOG_TAG = MainActivity.class.getName();
     private RecyclerView mRecyclerView;
@@ -37,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView noNotesFound;
     private MenuItem searchItem;
     private SearchView searchView;
+    private FirebaseFirestore mFireStore;
+    private DocumentReference mDocumentReference;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -89,10 +101,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.activity_main);
+
+        mFireStore = FirebaseFirestore.getInstance();
         databaseHelper = KeepReaderDbHelper.getInstance(this);
+
+        //mDocumentReference = mFireStore.document("notesData/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/notes");
+
+
+
 
         mRecyclerView = findViewById(R.id.notes_recycler_view);
         addNoteButton = findViewById(R.id.add_note_button);
@@ -137,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     public void doMyOwnSearch(String queryString) {
         Cursor c = databaseHelper.getWordMatches(queryString);
 
@@ -151,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode) {
@@ -184,6 +199,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
                 Note newNote = new Note(data.getStringExtra("titleResult"), data.getStringExtra("noteDescriptionResult"));
                 databaseHelper.addNote(newNote);
+
+                Map<String, Object> noteToAdd = new HashMap<String, Object>();
+                noteToAdd.put(NOTE_TITLE, newNote.getNoteTitle());
+                noteToAdd.put(ACTUAL_NOTE, newNote.getNoteDescription());
+                mFireStore.collection("mainData").document("user").collection("noteCollection").add(noteToAdd).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Document created", Toast.LENGTH_SHORT).show();
+
+                        } else {
+                            Log.e(LOG_TAG, "HMMM");
+                            Toast.makeText(MainActivity.this, "Document not created", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
 
                 mAdapter.setmNotes(databaseHelper.getAllNotes());
                 noNotesFound.setVisibility(View.GONE);
