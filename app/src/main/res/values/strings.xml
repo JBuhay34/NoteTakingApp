@@ -3,4 +3,7 @@
     <string name="add_a_note">Add a note...</string>
     <string name="search_note">Search for a note</string>
     <string name="action_search">Search</string>
+    <string name="google_status_fmt">Email: %s</string>
+    <string name="firebase_status_fmt">Firebase Status: %s</string>
+    <string name="signed_out">You are signed out</string>
 </resources>

@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView noNotesFound;
     private MenuItem searchItem;
     private SearchView searchView;
-    private FirebaseAuth mAuth;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAuth = FirebaseAuth.getInstance();
 
         setContentView(R.layout.activity_main);
         databaseHelper = KeepReaderDbHelper.getInstance(this);
@@ -129,22 +127,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         mRecyclerView.setAdapter(mAdapter);
 
-        //updateUI(mAuth.getCurrentUser());
 
 
     }
 
-    /*
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
-                    "User ID: " + user.getUid());
-        } else {
-            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
-                    "Error: sign in failed.");
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+
     }
-    */
+
 
     public void doMyOwnSearch(String queryString) {
         Cursor c = databaseHelper.getWordMatches(queryString);
