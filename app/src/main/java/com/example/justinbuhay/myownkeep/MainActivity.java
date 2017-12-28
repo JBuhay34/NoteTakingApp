@@ -19,16 +19,25 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
     public static final int NEW_NOTE_REQUEST = 1;
     public static final int DELETE_NOTE_REQUEST = 2;
     public static final String NOTE_TITLE = "notetitle";
@@ -45,6 +54,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SearchView searchView;
     private FirebaseFirestore mFireStore;
     private DocumentReference mDocumentReference;
+
+    private void updateAllNotesIncludingCloud() {
+
+        mDocumentReference.collection("noteCollection").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    ArrayList<Note> notes = new ArrayList<Note>();
+                    for (DocumentSnapshot document : task.getResult()) {
+
+                        Note newNote2 = new Note(document.getString("notetitle"), document.getString("actualnote"), document.getId());
+                        Log.d(LOG_TAG, "This is a Note: " + newNote2.getNoteTitle() + " ---- " + newNote2.getNoteDescription() + " ---- " + newNote2.getUniqueStorageID());
+                        notes.add(newNote2);
+                        List<Note> temporaryList = databaseHelper.getAllNotes();
+                        boolean isItThere = false;
+                        boolean didItChange = false;
+                        int position = 0;
+                        for (Note theNote : temporaryList) {
+                            if (theNote.getUniqueStorageID().equals(newNote2.getUniqueStorageID())) {
+                                isItThere = true;
+                                if (theNote.getNoteTitle().equals(newNote2.getNoteTitle()) && theNote.getNoteDescription().equals(newNote2.getNoteDescription())) {
+                                    didItChange = false;
+                                } else {
+                                    didItChange = true;
+                                    Log.e(LOG_TAG, position + " was changed");
+                                    databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), newNote2.getNoteTitle(), newNote2.getNoteDescription());
+                                }
+
+                            }
+                            position++;
+                        }
+
+                        if (isItThere == true && didItChange == false) {
+
+                        } else if (isItThere == false) {
+                            databaseHelper.addNote(newNote2);
+                        } else if (isItThere == true && didItChange == true) {
+
+                        }
+                    }
+
+
+                } else {
+                    Log.e(LOG_TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
+
+
+        mAdapter.setmNotes(databaseHelper.getAllNotes());
+        mRecyclerView.setAdapter(mAdapter);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     doMyOwnSearch(query);
 
                 } else {
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -81,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
                 } else {
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -186,6 +247,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private void updateRealtime(String storageID) {
+        DocumentReference documentReference = mFireStore.document("mainData/user").collection("noteCollection").document(storageID);
+        documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(DocumentSnapshot snapshot, FirebaseFirestoreException e) {
+
+                updateAllNotesIncludingCloud();
+                if (e != null) {
+                    Log.w(LOG_TAG, "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    Log.e(LOG_TAG, "Current data: " + snapshot.getData());
+
+                } else {
+                    Log.d(LOG_TAG, "Current data: null");
+                }
+            }
+        });
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -207,8 +290,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
                         Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
                         databaseHelper.addNote(newNote);
-                        mAdapter.setmNotes(databaseHelper.getAllNotes());
+                        updateAllNotesIncludingCloud();
                         noNotesFound.setVisibility(View.GONE);
+
+                        updateRealtime(newNote.getUniqueStorageID());
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -223,8 +309,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (data.getBooleanExtra("update", true) == false) {
                     Log.i(LOG_TAG, "deleted note");
 
+                    mDocumentReference.collection("noteCollection").document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).delete();
+
+
                     databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 } else {
                     String title = data.getStringExtra("titleResult");
@@ -236,11 +325,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     noteToAdd.put(NOTE_TITLE, title);
                     noteToAdd.put(ACTUAL_NOTE, description);
 
-                    Log.e(LOG_TAG, databaseHelper.getAllNotes().get(position).getUniqueStorageID() + "WHATTT U NOO WORK");
 
                     mDocumentReference.collection("noteCollection").document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
                     databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateRealtime(databaseHelper.getAllNotes().get(position).getUniqueStorageID());
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
 

@@ -30,6 +30,7 @@ public class Note {
     public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID) {
         this(noteTitle, noteDescription, uniqueStorageID);
         this.noteID = noteID;
+
     }
 
     public String getUniqueStorageID() {
