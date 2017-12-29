@@ -122,7 +122,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(NOTES_SELECT_QUERY, null);
-        Log.e("KeepReaderDbHelper", "getAllNotes is shown");
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -156,10 +155,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
         String where2 = NoteTakingEntry.COLUMN_ACTUAL_NOTE + " LIKE ?";
 
         String[] whereArgs = new String[]{queryString};
-
-
-
-
 
         try {
 
