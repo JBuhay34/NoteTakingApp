@@ -23,7 +23,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     doMyOwnSearch(query);
 
                 } else {
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateRealtime();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -91,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
                 } else {
-                    mAdapter.setmNotes(databaseHelper.getAllNotes());
+                    updateRealtime();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -148,10 +147,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        mRecyclerView.setAdapter(mAdapter);
-
 
         updateRealtime();
+
+        mRecyclerView.setAdapter(mAdapter);
+
 
 
     }
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).delete();
 
 
-                    databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
+                    //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
                     updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 } else {
@@ -262,7 +262,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
-                    databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
+                    //databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
 
@@ -273,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void updateRealtime() {
-        mFireStore.collection(noteCollection).whereEqualTo("allnotesshouldhavethis", "hello")
+        mFireStore.collection(noteCollection).whereEqualTo("allnotesshouldhavethis", "work?")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(QuerySnapshot value, FirebaseFirestoreException e) {
@@ -281,21 +282,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Log.w(LOG_TAG, "Listen failed.", e);
                             return;
                         }
-
-                        for (DocumentChange dc : value.getDocumentChanges()) {
-                            switch (dc.getType()) {
-                                case ADDED:
-                                    Log.e(LOG_TAG, "New city: " + dc.getDocument().getData());
-                                    break;
-                                case MODIFIED:
-                                    Log.e(LOG_TAG, "Modified city: " + dc.getDocument().getData());
-                                    break;
-                                case REMOVED:
-                                    Log.e(LOG_TAG, "Removed city: " + dc.getDocument().getData());
-                                    break;
-                            }
-                        }
-
 
                         updateAllNotesIncludingCloud();
 
