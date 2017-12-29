@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,9 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
@@ -51,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private KeepReaderDbHelper databaseHelper;
     private TextView noNotesFound;
     private MenuItem searchItem;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private SearchView searchView;
     private FirebaseFirestore mFireStore;
     private DocumentReference mDocumentReference;
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     doMyOwnSearch(query);
 
                 } else {
-                    updateRealtime();
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
                 } else {
-                    updateRealtime();
+                    updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return false;
@@ -114,6 +114,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
         mDocumentReference = mFireStore.document("mainData/user");
+
+        mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
+
+        mSwipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        updateAllNotesIncludingCloud();
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }
+        );
 
         mRecyclerView = findViewById(R.id.notes_recycler_view);
         addNoteButton = findViewById(R.id.add_note_button);
@@ -148,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-        updateRealtime();
+        updateAllNotesIncludingCloud();
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -223,7 +239,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onSuccess(DocumentReference documentReference) {
                         Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
                         Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
-                        databaseHelper.addNote(newNote);
 
                         noNotesFound.setVisibility(View.GONE);
 
@@ -236,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                updateRealtime();
+                updateAllNotesIncludingCloud();
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -274,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void updateRealtime() {
+        updateAllNotesIncludingCloud();
+        /*
         mFireStore.collection(noteCollection).whereEqualTo("allnotesshouldhavethis", "work?")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
@@ -283,10 +300,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             return;
                         }
 
-                        updateAllNotesIncludingCloud();
+
 
                     }
                 });
+        */
     }
 
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore
@@ -320,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // This for-each loop goes through all the notes on the database
                         for (Note theNote : notesOnDatabase) {
+
 
                             if (theNote.getUniqueStorageID().equals(newNote2.getUniqueStorageID())) {
                                 isItThere = true;

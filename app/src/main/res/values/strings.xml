@@ -6,4 +6,5 @@
     <string name="google_status_fmt">Email: %s</string>
     <string name="firebase_status_fmt">Firebase Status: %s</string>
     <string name="signed_out">You are signed out</string>
+    <string name="refresh">Refresh</string>
 </resources>
