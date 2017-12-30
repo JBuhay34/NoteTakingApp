@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyOwnKeep</string>
+    <string name="app_name">Notes</string>
     <string name="add_a_note">Add a note...</string>
     <string name="search_note">Search for a note</string>
     <string name="action_search">Search</string>

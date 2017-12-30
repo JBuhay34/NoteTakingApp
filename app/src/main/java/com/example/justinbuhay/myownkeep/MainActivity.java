@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavView;
+    private TextView mUserName;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -139,8 +141,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         final Toolbar mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+        mFireStore = FirebaseFirestore.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
 
         mNavView = findViewById(R.id.navigation_view);
+
+        View headerLayout = mNavView.getHeaderView(0);
+        mUserName = headerLayout.findViewById(R.id.user_name_text_view);
         setupDrawerContent(mNavView);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -170,8 +177,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-        mFireStore = FirebaseFirestore.getInstance();
-        mFirebaseAuth = FirebaseAuth.getInstance();
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
         mDocumentReference = mFireStore.document("mainData/user");
@@ -234,6 +239,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
+
+        if (mFirebaseAuth.getCurrentUser() != null) {
+            mUserName.setText(mFirebaseAuth.getCurrentUser().getEmail());
+        }
+
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
