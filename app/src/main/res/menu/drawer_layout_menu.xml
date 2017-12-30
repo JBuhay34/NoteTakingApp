@@ -2,22 +2,24 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/notes_navigation"
-        android:icon="@drawable/ic_notes"
-        android:title="@string/notes"
-        app:showAsAction="always" />
+    <group android:checkableBehavior="single">
 
-    <item
-        android:id="@+id/settings_navigation"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/settings"
-        app:showAsAction="always" />
+        <item
+            android:id="@+id/notes_navigation"
+            android:icon="@drawable/ic_notes"
+            android:title="@string/notes"
+            app:showAsAction="always" />
 
-    <item
-        android:id="@+id/sign_out_navigation"
-        android:title="@string/sign_out"
-        app:showAsAction="always" />
+        <item
+            android:id="@+id/settings_navigation"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/settings"
+            app:showAsAction="always" />
 
+        <item
+            android:id="@+id/sign_out_navigation"
+            android:title="@string/sign_out"
+            app:showAsAction="always" />
+    </group>
 
 </menu>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -22,12 +23,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -57,10 +60,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private SearchView searchView;
     private FirebaseFirestore mFireStore;
+    private FirebaseAuth mFirebaseAuth;
     private DocumentReference mDocumentReference;
 
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
+    private NavigationView mNavView;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -116,11 +121,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
+
             default:
                 return super.onOptionsItemSelected(item);
 
         }
 
+    }
+
+    public void makeToast(String sayThis) {
+        Toast.makeText(this, sayThis, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -130,8 +140,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final Toolbar mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        mNavView = findViewById(R.id.navigation_view);
+        setupDrawerContent(mNavView);
+
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
@@ -159,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         mFireStore = FirebaseFirestore.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
         mDocumentReference = mFireStore.document("mainData/user");
@@ -218,6 +231,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+    }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        selectDrawerItem(item);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    public void selectDrawerItem(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.sign_out_navigation:
+                makeToast("Sign out clicked!!!");
+                mFirebaseAuth.signOut();
+                Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.notes_navigation:
+                makeToast("notes nav clicked");
+                break;
+            case R.id.settings_navigation:
+                makeToast("settings nav clicked");
+                break;
+        }
+        menuItem.setChecked(true);
+        mDrawerLayout.closeDrawers();
     }
 
     @Override
