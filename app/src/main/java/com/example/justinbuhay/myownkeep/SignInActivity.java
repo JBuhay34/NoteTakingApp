@@ -33,6 +33,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
+
     private TextView mStatusTextView;
     private TextView mDetailTextView;
 
@@ -52,6 +53,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
                     Intent intent = new Intent(SignInActivity.this, MainActivity.class);
                     startActivity(intent);
+                    finish();
                     Toast.makeText(SignInActivity.this, "Welcome: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d(TAG, "User Logged out.");

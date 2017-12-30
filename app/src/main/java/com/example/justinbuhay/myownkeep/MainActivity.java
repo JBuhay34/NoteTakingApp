@@ -6,12 +6,16 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -55,17 +59,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseFirestore mFireStore;
     private DocumentReference mDocumentReference;
 
+    private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the options menu from XML
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-        searchItem = menu.findItem(R.id.search);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) searchItem.getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -79,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
-                return false;
+                return true;
             }
 
             @Override
@@ -93,22 +99,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     updateAllNotesIncludingCloud();
                     noNotesFound.setVisibility(View.GONE);
                 }
-                return false;
+                return true;
             }
         });
 
 
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false);
+
         return true;
+
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final Toolbar mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                getActionBar().setTitle("What's this closed");
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                getActionBar().setTitle("What's this opened");
+            }
+        };
+
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
+        mToolbar.setNavigationIcon(R.drawable.ic_action_name);
+
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(Gravity.START);
+            }
+        });
+
 
         mFireStore = FirebaseFirestore.getInstance();
         databaseHelper = KeepReaderDbHelper.getInstance(this);
