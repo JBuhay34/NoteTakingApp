@@ -24,6 +24,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
     private final int RC_SIGN_IN = 3;
@@ -32,6 +33,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private SignInButton mSignInButton;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseFirestore mFireStore;
 
 
     private TextView mStatusTextView;
@@ -43,6 +45,11 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_sign_in);
 
         mAuth = FirebaseAuth.getInstance();
+        mFireStore = FirebaseFirestore.getInstance();
+
+
+
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -51,6 +58,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     Log.d(TAG, "User Logged in: " + user.getEmail());
                     mStatusTextView.setVisibility(View.VISIBLE);
                     mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
+
+
                     Intent intent = new Intent(SignInActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();

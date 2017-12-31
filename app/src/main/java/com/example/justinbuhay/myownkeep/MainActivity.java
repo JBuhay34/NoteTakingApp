@@ -4,7 +4,10 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -22,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +40,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavView;
     private TextView mUserName;
+    private ImageView mUserPhoto;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -144,10 +150,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFireStore = FirebaseFirestore.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
+        makeToast(mFirebaseAuth.getCurrentUser().getUid());
         mNavView = findViewById(R.id.navigation_view);
 
         View headerLayout = mNavView.getHeaderView(0);
         mUserName = headerLayout.findViewById(R.id.user_name_text_view);
+        mUserPhoto = headerLayout.findViewById(R.id.user_image_view);
         setupDrawerContent(mNavView);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -179,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
-        mDocumentReference = mFireStore.document("mainData/user");
+        mDocumentReference = mFireStore.document("users/" + mFirebaseAuth.getCurrentUser().getUid());
+
 
         mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
 
@@ -242,6 +251,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (mFirebaseAuth.getCurrentUser() != null) {
             mUserName.setText(mFirebaseAuth.getCurrentUser().getEmail());
+            Uri userPhoto = mFirebaseAuth.getCurrentUser().getPhotoUrl();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), userPhoto);
+                mUserPhoto.setImageBitmap(bitmap);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
         }
 
         navigationView.setNavigationItemSelectedListener(
@@ -333,11 +350,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String noteDescription = data.getStringExtra("noteDescriptionResult");
 
                 Map<String, Object> noteToAdd = new HashMap<String, Object>();
-                noteToAdd.put("allnotesshouldhavethis", "hello");
                 noteToAdd.put(NOTE_TITLE, titleResult);
                 noteToAdd.put(ACTUAL_NOTE, noteDescription);
 
-                mFireStore.collection("mainData").document("user").collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
