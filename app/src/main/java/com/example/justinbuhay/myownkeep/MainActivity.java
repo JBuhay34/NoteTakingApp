@@ -407,37 +407,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void updateRealtime() {
-        updateAllNotesIncludingCloud();
-        /*
-        mFireStore.collection(noteCollection).whereEqualTo("allnotesshouldhavethis", "work?")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(QuerySnapshot value, FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(LOG_TAG, "Listen failed.", e);
-                            return;
-                        }
-
-
-
-                    }
-                });
-        */
-    }
-
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore
     private void updateAllNotesIncludingCloud() {
-
 
         // the get() method obtains a task array with all of the data in firebase.
         mDocumentReference.collection(noteCollection).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-
                 if (task.isSuccessful()) {
-
 
                     List<Note> notesOnDatabase = databaseHelper.getAllNotes();
                     List<Note> notesOnFireStore = new LinkedList<Note>();
@@ -451,13 +429,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         boolean isItThere = false;
 
-
                         int position = 0;
-
 
                         // This for-each loop goes through all the notes on the database
                         for (Note theNote : notesOnDatabase) {
-
 
                             if (theNote.getUniqueStorageID().equals(newNote2.getUniqueStorageID())) {
                                 isItThere = true;
@@ -478,9 +453,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             databaseHelper.addNote(newNote2);
                         }
 
-
                     }
-
 
                     for (int i = 0; i < notesOnDatabase.size(); i++) {
                         boolean isItThere2 = false;
@@ -497,9 +470,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
 
-
                     mAdapter.setmNotes(databaseHelper.getAllNotes());
-
 
                 } else {
                     Log.e(LOG_TAG, "Error getting documents: ", task.getException());
@@ -507,7 +478,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         });
-
 
     }
 }
