@@ -18,6 +18,7 @@
         android:textSize="16sp" />
 
     <ImageButton
+        android:id="@+id/camera_action_button"
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

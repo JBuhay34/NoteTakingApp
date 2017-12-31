@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,22 +53,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int DELETE_NOTE_REQUEST = 2;
     public static final String NOTE_TITLE = "notetitle";
     public static final String ACTUAL_NOTE = "actualnote";
-
+    private static int SELECT_IMAGE = 99;
     private final String LOG_TAG = MainActivity.class.getName();
     private final String noteCollection = "noteCollection";
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private NotesAdapter mAdapter;
     private Button addNoteButton;
+    private ImageButton addImageButton;
     private KeepReaderDbHelper databaseHelper;
     private TextView noNotesFound;
-    private MenuItem searchItem;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private SearchView searchView;
     private FirebaseFirestore mFireStore;
     private FirebaseAuth mFirebaseAuth;
     private DocumentReference mDocumentReference;
-
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavView;
@@ -207,9 +207,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mRecyclerView = findViewById(R.id.notes_recycler_view);
         addNoteButton = findViewById(R.id.add_note_button);
+        addImageButton = findViewById(R.id.camera_action_button);
         noNotesFound = findViewById(R.id.no_notes_found_text_view);
 
         addNoteButton.setOnClickListener(this);
+        addImageButton.setOnClickListener(this);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -298,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     public void doMyOwnSearch(String queryString) {
         Cursor c = databaseHelper.getWordMatches(queryString);
 
@@ -326,6 +327,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
                 startActivityForResult(i, NEW_NOTE_REQUEST);
                 break;
+            case R.id.camera_action_button:
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_IMAGE);
         }
     }
 
