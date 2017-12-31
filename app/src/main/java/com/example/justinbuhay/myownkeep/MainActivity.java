@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFireStore = FirebaseFirestore.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
-        makeToast(mFirebaseAuth.getCurrentUser().getUid());
         mNavView = findViewById(R.id.navigation_view);
 
         View headerLayout = mNavView.getHeaderView(0);
