@@ -1,6 +1,16 @@
 <resources>
-    <string name="app_name">MyOwnKeep</string>
+    <string name="app_name">Notes</string>
     <string name="add_a_note">Add a note...</string>
     <string name="search_note">Search for a note</string>
     <string name="action_search">Search</string>
+    <string name="google_status_fmt">Email: %s</string>
+    <string name="firebase_status_fmt">Firebase Status: %s</string>
+    <string name="signed_out">You are signed out</string>
+    <string name="navigation">Navigation</string>
+    <string name="drawer_open">Drawer opened</string>
+    <string name="drawer_close">Drawer closed</string>
+    <string name="sign_out">Sign out</string>
+    <string name="settings">Settings</string>
+    <string name="notes">Notes</string>
+    <string name="welcome">Hello! Welcome to Notes. Where you can take any notes on the fly and make sure that any type of important detail is saved.</string>
 </resources>

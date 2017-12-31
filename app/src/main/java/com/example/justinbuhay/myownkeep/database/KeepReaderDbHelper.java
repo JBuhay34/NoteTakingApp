@@ -25,10 +25,11 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + NoteTakingEntry.TABLE_NAME;
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + NoteTakingEntry.TABLE_NAME + " (" +
                     NoteTakingEntry._ID + " INTEGER PRIMARY KEY, " +
+                    NoteTakingEntry.COLUMN_UNIQUE_ID + " TEXT, " +
                     NoteTakingEntry.COLUMN_NOTE_TITLE + " TEXT, " +
                     NoteTakingEntry.COLUMN_ACTUAL_NOTE + " TEXT)";
     private static KeepReaderDbHelper sInstance;
@@ -72,6 +73,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(NoteTakingEntry.COLUMN_NOTE_TITLE, note.getNoteTitle());
             values.put(NoteTakingEntry.COLUMN_ACTUAL_NOTE, note.getNoteDescription());
+            values.put(NoteTakingEntry.COLUMN_UNIQUE_ID, note.getUniqueStorageID());
 
 
             db.insertOrThrow(NoteTakingEntry.TABLE_NAME, null, values);
@@ -120,15 +122,15 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(NOTES_SELECT_QUERY, null);
-        Log.e("KeepReaderDbHelper", "getAllNotes is shown");
         try {
             if (cursor.moveToFirst()) {
                 do {
                     String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
                     String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
                     int id = cursor.getInt(cursor.getColumnIndex(NoteTakingEntry._ID));
+                    String uniqueID = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_UNIQUE_ID));
 
-                    Note newNote = new Note(noteTitle, noteDescription, id);
+                    Note newNote = new Note(noteTitle, noteDescription, uniqueID, id);
 
                     notes.add(newNote);
                 } while(cursor.moveToNext());
@@ -153,10 +155,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
         String where2 = NoteTakingEntry.COLUMN_ACTUAL_NOTE + " LIKE ?";
 
         String[] whereArgs = new String[]{queryString};
-
-
-
-
 
         try {
 

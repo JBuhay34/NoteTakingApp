@@ -19,6 +19,8 @@ public class NoteTakingContract {
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_NOTE_TITLE = "notetitle";
         public static final String COLUMN_ACTUAL_NOTE = "actualnote";
+        public static final String COLUMN_UNIQUE_ID = "uniqueid";
+
     }
 
 }
