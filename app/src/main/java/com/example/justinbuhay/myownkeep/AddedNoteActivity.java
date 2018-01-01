@@ -17,6 +17,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
 
 import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
 import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_UUID;
@@ -94,6 +96,14 @@ public class AddedNoteActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
+            FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
+        }
+    }
+
     private class saveButtonListener implements View.OnClickListener {
 
 
@@ -119,6 +129,5 @@ public class AddedNoteActivity extends AppCompatActivity {
                 finish();
             }
         }
-        }
-
+    }
 }
