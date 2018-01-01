@@ -52,7 +52,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
         if (mNotes.get(position).getNotePath() != null && mNotes.get(position).getNoteImageUUID() != null) {
             Log.e("NotesAdapter", position + "The notes aren't null");
-            Glide.with(mContext).load(mNotes.get(position).getNotePath()).into(holder.mNoteImageView);
+            Glide.with(mContext).load(mNotes.get(position).getNotePath()).override(400, 400).centerCrop().into(holder.mNoteImageView);
             holder.mNoteImageView.setVisibility(View.VISIBLE);
         } else {
             Log.e("NotesAdapter", position + "The notes are null");
@@ -77,7 +77,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
     // Define the listener interface
     public interface OnItemClickListener {
-        void onItemClick(View itemView, int position, String noteTitle, String noteDescription);
+        void onItemClick(View itemView, int position, String noteTitle, String noteDescription, String notePath);
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -99,7 +99,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                     if (mListener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            mListener.onItemClick(itemView, position, mNoteTitleTextView.getText().toString(), mNoteDescriptionTextView.getText().toString());
+                            mListener.onItemClick(itemView, position, mNoteTitleTextView.getText().toString(), mNoteDescriptionTextView.getText().toString(), mNotes.get(position).getNotePath());
                         }
                     }
                 }

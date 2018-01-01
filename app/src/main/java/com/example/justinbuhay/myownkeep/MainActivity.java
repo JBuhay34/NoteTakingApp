@@ -249,12 +249,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAdapter = new NotesAdapter(this, databaseHelper.getAllNotes());
         mAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position, String noteTitle, String noteDescription) {
+            public void onItemClick(View view, int position, String noteTitle, String noteDescription, String notePath) {
                 if (position != RecyclerView.NO_POSITION) {
                     Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
                     i.putExtra("position", position);
                     i.putExtra("titleResult", noteTitle);
                     i.putExtra("noteDescriptionResult", noteDescription);
+                    i.putExtra("thePictureURL", notePath);
                     startActivityForResult(i, DELETE_NOTE_REQUEST);
 
                 }

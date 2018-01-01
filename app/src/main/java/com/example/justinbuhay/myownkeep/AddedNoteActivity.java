@@ -84,6 +84,13 @@ public class AddedNoteActivity extends AppCompatActivity {
             noteTitle.setText(intent.getStringExtra("titleResult"), TextView.BufferType.EDITABLE);
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
             notePosition = intent.getIntExtra("position", -1);
+            if (intent.getStringExtra("thePictureURL") != null) {
+                noteImage.setVisibility(View.VISIBLE);
+                Glide.with(this)
+                        .load(intent.getStringExtra("thePictureURL"))
+                        .centerCrop()
+                        .into(noteImage);
+            }
 
         } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(NOTE_IMAGE_UUID) != null) {
             noteImage.setVisibility(View.VISIBLE);
@@ -92,6 +99,7 @@ public class AddedNoteActivity extends AppCompatActivity {
             theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
             Glide.with(this)
                     .load(pathForImage)
+                    .centerCrop()
                     .into(noteImage);
         }
     }
