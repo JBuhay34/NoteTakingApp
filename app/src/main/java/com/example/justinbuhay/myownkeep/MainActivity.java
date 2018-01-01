@@ -432,12 +432,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == RESULT_OK) {
                 int position = data.getIntExtra("position", -1);
                 if (data.getBooleanExtra("update", true) == false) {
-                    Log.i(LOG_TAG, "deleted note");
-                    Note noteToDelete = databaseHelper.getAllNotes().get(position);
 
-                    mDocumentReference.collection(noteCollection).document(noteToDelete.getUniqueStorageID()).delete();
-                    if (noteToDelete.getNoteImageUUID() != null) {
-                        mFirebaseStorage.getReference().child("users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + noteToDelete.getNoteImageUUID() + ".png").delete();
+                    String uniqueStorageID = mAdapter.getmNotes().get(position).getUniqueStorageID();
+                    makeToast("\"" + mAdapter.getmNotes().get(position).getNoteTitle() + "\" deleted");
+
+                    mDocumentReference.collection(noteCollection).document(uniqueStorageID).delete();
+                    if (mAdapter.getmNotes().get(position).getNoteImageUUID() != null) {
+                        mFirebaseStorage.getReference().child("users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + mAdapter.getmNotes().get(position).getNoteImageUUID() + ".png").delete();
                     }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));

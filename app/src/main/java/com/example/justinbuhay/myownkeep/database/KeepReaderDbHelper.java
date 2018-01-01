@@ -216,7 +216,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                 }
                 Note newNote;
                 if (notePath == null && imageuuid == null) {
-                    newNote = new Note(noteTitle, noteDescription);
+                    newNote = new Note(noteTitle, noteDescription, uniqueID);
                     Log.e("KeepReaderDbHelper", noteTitle + " there is no image");
                 } else {
                     newNote = new Note(noteTitle, noteDescription, uniqueID, notePath, imageuuid);

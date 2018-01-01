@@ -61,6 +61,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
     }
 
+    public List<Note> getmNotes() {
+        return mNotes;
+    }
+
     public void setmNotes(List<Note> mNotes) {
         this.mNotes = mNotes;
         this.notifyDataSetChanged();
@@ -93,7 +97,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
                 public void onClick(View v) {
                     // Triggers click upwards to the adapter on click
                     if (mListener != null) {
-                        int position = mNotes.get(getAdapterPosition()).getNoteID();
+                        int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             mListener.onItemClick(itemView, position, mNoteTitleTextView.getText().toString(), mNoteDescriptionTextView.getText().toString());
                         }
