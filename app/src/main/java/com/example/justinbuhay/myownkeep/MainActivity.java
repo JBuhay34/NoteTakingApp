@@ -33,6 +33,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -271,13 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mFirebaseAuth.getCurrentUser() != null) {
             mUserName.setText(mFirebaseAuth.getCurrentUser().getEmail());
             Uri userPhoto = mFirebaseAuth.getCurrentUser().getPhotoUrl();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), userPhoto);
-                mUserPhoto.setImageBitmap(bitmap);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
+            Glide.with(this).load(userPhoto).override(300, 300).into(mUserPhoto);
         }
 
         navigationView.setNavigationItemSelectedListener(
