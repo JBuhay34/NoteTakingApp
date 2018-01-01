@@ -319,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Cursor c = databaseHelper.getWordMatches(queryString);
 
         LinkedList<Note> notesLinkedList = databaseHelper.getQueriedNotes(c);
+
         mAdapter.setmNotes(notesLinkedList);
         if (notesLinkedList.size() <= 0) {
             noNotesFound.setVisibility(View.VISIBLE);
@@ -380,8 +381,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
-                        Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
 
                         noNotesFound.setVisibility(View.GONE);
 
@@ -404,8 +403,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else if (requestCode == NEW_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
-                Log.e("MainActivity.class", data.getStringExtra("titleResult"));
-                Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
+
                 final String titleResult = data.getStringExtra("titleResult");
                 final String noteDescription = data.getStringExtra("noteDescriptionResult");
 
@@ -416,8 +414,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
-                        Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
 
                         noNotesFound.setVisibility(View.GONE);
 
@@ -476,7 +472,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data1 = baos.toByteArray();
-                final String theImageUUID = UUID.randomUUID() + "";
+                final String theImageUUID = UUID.randomUUID().toString();
+                Log.e(LOG_TAG, theImageUUID + "Let's see");
 
                 String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
                 mStorageReference = mFirebaseStorage.getReference(path);
@@ -503,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.e(LOG_TAG, downloadUrl.toString());
                         Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
                         intent.putExtra(IMAGE_URL, downloadUrl.toString());
-                        intent.putExtra(theUUID, theImageUUID);
+                        intent.putExtra(NOTE_IMAGE_UUID, theImageUUID);
                         intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
                         startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
                     }
@@ -532,9 +529,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     for (DocumentSnapshot document : task.getResult()) {
 
                         // The note listed on the firestore.
-                        final Note newNote2 = new Note(document.getString("notetitle"), document.getString("actualnote"), document.getId());
+                        Note newNote2;
                         if (document.getString(NOTE_IMAGE_PATH) != null) {
-                            newNote2.setNotePath(document.getString(NOTE_IMAGE_PATH));
+                            newNote2 = new Note(document.getString("notetitle"), document.getString("actualnote"), document.getId(), document.getString(NOTE_IMAGE_PATH), document.getString(NOTE_IMAGE_UUID));
+                        } else {
+                            newNote2 = new Note(document.getString("notetitle"), document.getString("actualnote"), document.getId());
                         }
                         notesOnFireStore.add(newNote2);
 

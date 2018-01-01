@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 
 import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
+import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_UUID;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -81,10 +83,11 @@ public class AddedNoteActivity extends AppCompatActivity {
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
             notePosition = intent.getIntExtra("position", -1);
 
-        } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(theUUID) != null) {
+        } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(NOTE_IMAGE_UUID) != null) {
             noteImage.setVisibility(View.VISIBLE);
+            Log.e(LOG_TAG, "should be visible");
             pathForImage = intent.getStringExtra(IMAGE_URL);
-            theUUID = intent.getStringExtra(theUUID);
+            theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
             Glide.with(this)
                     .load(pathForImage)
                     .into(noteImage);

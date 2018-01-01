@@ -49,7 +49,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
         holder.mNoteTitleTextView.setText(mNotes.get(position).getNoteTitle());
         holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
-        if (mNotes.get(position).getNotePath() != null) {
+        if (mNotes.get(position).getNotePath() != null && mNotes.get(position).getNoteImageUUID() != null) {
             Glide.with(mContext).load(mNotes.get(position).getNotePath()).into(holder.mNoteImageView);
             holder.mNoteImageView.setVisibility(View.VISIBLE);
         }
