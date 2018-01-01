@@ -18,7 +18,6 @@ import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 
 import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
-import static com.example.justinbuhay.myownkeep.MainActivity.theUUID;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -30,6 +29,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private KeepReaderDbHelper databaseHelper;
     private ImageView noteImage;
     private String pathForImage;
+    private String theUUID;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -84,6 +84,7 @@ public class AddedNoteActivity extends AppCompatActivity {
         } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(theUUID) != null) {
             noteImage.setVisibility(View.VISIBLE);
             pathForImage = intent.getStringExtra(IMAGE_URL);
+            theUUID = intent.getStringExtra(theUUID);
             Glide.with(this)
                     .load(pathForImage)
                     .into(noteImage);
@@ -108,6 +109,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
                     returnedInformationIntent.putExtra("thePath", pathForImage);
+                    returnedInformationIntent.putExtra("theUUID", theUUID);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
 

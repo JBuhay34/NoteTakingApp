@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String NOTE_TITLE = "notetitle";
     public static final String ACTUAL_NOTE = "actualnote";
     public static final String NOTE_IMAGE_PATH = "noteimagepath";
+    public static final String NOTE_IMAGE_UUID = "noteimageuuid";
     public static int SELECT_IMAGE_REQUEST = 3;
     public static int ADD_THE_IMAGE_REQUEST = 4;
     public static String IMAGE_URL = "theURL";
@@ -355,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -367,11 +369,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String titleResult = data.getStringExtra("titleResult");
                 final String noteDescription = data.getStringExtra("noteDescriptionResult");
                 final String noteImagePath = data.getStringExtra("thePath");
+                final String noteImageUUID = data.getStringExtra("theUUID");
 
                 Map<String, Object> noteToAdd = new HashMap<String, Object>();
                 noteToAdd.put(NOTE_TITLE, titleResult);
                 noteToAdd.put(ACTUAL_NOTE, noteDescription);
                 noteToAdd.put(NOTE_IMAGE_PATH, noteImagePath);
+                noteToAdd.put(NOTE_IMAGE_UUID, noteImageUUID);
 
                 mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
@@ -433,9 +437,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 int position = data.getIntExtra("position", -1);
                 if (data.getBooleanExtra("update", true) == false) {
                     Log.i(LOG_TAG, "deleted note");
+                    Note noteToDelete = databaseHelper.getAllNotes().get(position);
 
-                    mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).delete();
-
+                    mDocumentReference.collection(noteCollection).document(noteToDelete.getUniqueStorageID()).delete();
+                    if (noteToDelete.getNoteImageUUID() != null) {
+                        mFirebaseStorage.getReference().child("users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + noteToDelete.getNoteImageUUID() + ".png").delete();
+                    }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
                     updateAllNotesIncludingCloud();

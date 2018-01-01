@@ -11,6 +11,7 @@ public class Note {
     private int noteID;
     private String uniqueStorageID;
     private String notePath;
+    private String noteImageUUID;
 
     public Note(String noteTitle, String noteDescription) {
         this.noteTitle = noteTitle;
@@ -37,6 +38,18 @@ public class Note {
         this.notePath = notePath;
     }
 
+    public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID, String notePath, String noteImageUUID) {
+        this(noteTitle, noteDescription, uniqueStorageID, noteID, notePath);
+        this.noteImageUUID = noteImageUUID;
+    }
+
+    public String getNoteImageUUID() {
+        return noteImageUUID;
+    }
+
+    public void setNoteImageUUID(String noteImageUUID) {
+        this.noteImageUUID = noteImageUUID;
+    }
 
     public String getUniqueStorageID() {
         return uniqueStorageID;

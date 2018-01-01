@@ -15,6 +15,7 @@ import com.example.justinbuhay.myownkeep.database.NoteTakingContract.NoteTakingE
 import java.util.LinkedList;
 import java.util.List;
 
+import static android.R.attr.id;
 import static android.content.ContentValues.TAG;
 
 /**
@@ -25,13 +26,14 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + NoteTakingEntry.TABLE_NAME;
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 5;
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + NoteTakingEntry.TABLE_NAME + " (" +
                     NoteTakingEntry._ID + " INTEGER PRIMARY KEY, " +
                     NoteTakingEntry.COLUMN_UNIQUE_ID + " TEXT, " +
                     NoteTakingEntry.COLUMN_NOTE_TITLE + " TEXT, " +
                     NoteTakingEntry.COLUMN_IMAGE_PATH + " TEXT, " +
+                    NoteTakingEntry.COLUMN_IMAGE_UUID + " TEXT, " +
                     NoteTakingEntry.COLUMN_ACTUAL_NOTE + " TEXT)";
     private static KeepReaderDbHelper sInstance;
     private static Context mContext;
@@ -77,6 +79,7 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             values.put(NoteTakingEntry.COLUMN_UNIQUE_ID, note.getUniqueStorageID());
             if (note.getNotePath() != null) {
                 values.put(NoteTakingEntry.COLUMN_IMAGE_PATH, note.getNotePath());
+                values.put(NoteTakingEntry.COLUMN_IMAGE_UUID, note.getNoteImageUUID());
             }
 
 
@@ -134,11 +137,12 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                     int id = cursor.getInt(cursor.getColumnIndex(NoteTakingEntry._ID));
                     String uniqueID = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_UNIQUE_ID));
                     String notePath = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_PATH));
+                    String imageuuid = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_UUID));
                     Note newNote;
                     if (notePath == null) {
                         newNote = new Note(noteTitle, noteDescription, uniqueID, id);
                     } else {
-                        newNote = new Note(noteTitle, noteDescription, uniqueID, id, notePath);
+                        newNote = new Note(noteTitle, noteDescription, uniqueID, id, notePath, imageuuid);
                     }
 
                     notes.add(newNote);
@@ -199,6 +203,10 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             do {
                 String noteTitle = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_NOTE_TITLE));
                 String noteDescription = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_ACTUAL_NOTE));
+                String uniqueID = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_UNIQUE_ID));
+                String notePath = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_PATH));
+                String imageuuid = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_UUID));
+
 
                 boolean isItAlreadyThere = false;
                 for (Note title : noteTitles) {
@@ -206,7 +214,12 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                         isItAlreadyThere = true;
                     }
                 }
-                Note newNote = new Note(noteTitle, noteDescription);
+                Note newNote;
+                if (notePath == null) {
+                    newNote = new Note(noteTitle, noteDescription, uniqueID, id);
+                } else {
+                    newNote = new Note(noteTitle, noteDescription, uniqueID, id, notePath, imageuuid);
+                }
                 noteTitles.add(newNote);
                 if (!isItAlreadyThere) {
                     notes.add(newNote);
