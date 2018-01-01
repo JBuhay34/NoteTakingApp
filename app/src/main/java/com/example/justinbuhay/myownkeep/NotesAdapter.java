@@ -1,19 +1,16 @@
 package com.example.justinbuhay.myownkeep;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.LinkedList;
+import com.bumptech.glide.Glide;
+
 import java.util.List;
-
-import static android.R.attr.description;
-import static com.example.justinbuhay.myownkeep.MainActivity.NEW_NOTE_REQUEST;
 
 /**
  * Created by justinbuhay on 11/22/17.
@@ -52,6 +49,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
         holder.mNoteTitleTextView.setText(mNotes.get(position).getNoteTitle());
         holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
+        if (mNotes.get(position).getNotePath() != null) {
+            Glide.with(mContext).load(mNotes.get(position).getNotePath()).into(holder.mNoteImageView);
+            holder.mNoteImageView.setVisibility(View.VISIBLE);
+        }
 
     }
 
@@ -74,12 +75,14 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
 
         public TextView mNoteTitleTextView;
         public TextView mNoteDescriptionTextView;
+        public ImageView mNoteImageView;
 
         public MyViewHolder(View v) {
             super(v);
 
             mNoteTitleTextView = v.findViewById(R.id.the_note_title);
             mNoteDescriptionTextView = v.findViewById(R.id.the_note_description);
+            mNoteImageView = v.findViewById(R.id.image_for_list_item);
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

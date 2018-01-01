@@ -526,6 +526,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // The note listed on the firestore.
                         final Note newNote2 = new Note(document.getString("notetitle"), document.getString("actualnote"), document.getId());
+                        if (document.getString(NOTE_IMAGE_PATH) != null) {
+                            newNote2.setNotePath(document.getString(NOTE_IMAGE_PATH));
+                        }
                         notesOnFireStore.add(newNote2);
 
                         boolean isItThere = false;

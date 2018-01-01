@@ -40,6 +40,11 @@
             android:textColor="@color/colorWhite"
             android:textSize="12sp" />
 
+            <ImageView
+                android:id="@+id/image_for_list_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
         </LinearLayout>
 
     </android.support.v7.widget.CardView>

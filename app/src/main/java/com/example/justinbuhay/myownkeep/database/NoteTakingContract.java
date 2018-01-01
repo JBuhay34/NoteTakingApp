@@ -20,6 +20,7 @@ public class NoteTakingContract {
         public static final String COLUMN_NOTE_TITLE = "notetitle";
         public static final String COLUMN_ACTUAL_NOTE = "actualnote";
         public static final String COLUMN_UNIQUE_ID = "uniqueid";
+        public static final String COLUMN_IMAGE_PATH = "imagepath";
 
     }
 

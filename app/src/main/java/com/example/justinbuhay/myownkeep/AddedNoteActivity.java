@@ -16,9 +16,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.storage.FirebaseStorage;
 
 import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
 import static com.example.justinbuhay.myownkeep.MainActivity.theUUID;
@@ -86,10 +83,9 @@ public class AddedNoteActivity extends AppCompatActivity {
 
         } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(theUUID) != null) {
             noteImage.setVisibility(View.VISIBLE);
-            pathForImage = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + intent.getStringExtra(theUUID) + ".png";
+            pathForImage = intent.getStringExtra(IMAGE_URL);
             Glide.with(this)
-                    .using(new FirebaseImageLoader())
-                    .load(FirebaseStorage.getInstance().getReference(pathForImage))
+                    .load(pathForImage)
                     .into(noteImage);
         }
     }
@@ -112,6 +108,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
                     returnedInformationIntent.putExtra("thePath", pathForImage);
+                    setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
 
                 finish();

@@ -20,7 +20,6 @@ public class Note {
     public Note(String noteTitle, String noteDescription, int noteID) {
         this(noteTitle, noteDescription);
         this.noteID = noteID;
-
     }
 
     public Note(String noteTitle, String noteDescription, String uniqueStorageID) {
@@ -31,8 +30,13 @@ public class Note {
     public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID) {
         this(noteTitle, noteDescription, uniqueStorageID);
         this.noteID = noteID;
-
     }
+
+    public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID, String notePath) {
+        this(noteTitle, noteDescription, uniqueStorageID, noteID);
+        this.notePath = notePath;
+    }
+
 
     public String getUniqueStorageID() {
         return uniqueStorageID;
@@ -40,6 +44,14 @@ public class Note {
 
     public void setUniqueStorageID(String uniqueStorageID) {
         this.uniqueStorageID = uniqueStorageID;
+    }
+
+    public String getNotePath() {
+        return notePath;
+    }
+
+    public void setNotePath(String notePath) {
+        this.notePath = notePath;
     }
 
     public int getNoteID() {
