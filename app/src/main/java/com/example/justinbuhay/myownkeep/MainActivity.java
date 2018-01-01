@@ -1,5 +1,6 @@
 package com.example.justinbuhay.myownkeep;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,12 +43,17 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -53,7 +61,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int DELETE_NOTE_REQUEST = 2;
     public static final String NOTE_TITLE = "notetitle";
     public static final String ACTUAL_NOTE = "actualnote";
-    private static int SELECT_IMAGE = 99;
+    public static int SELECT_IMAGE_REQUEST = 3;
+    public static int ADD_THE_IMAGE_REQUEST = 4;
+    public static String IMAGE_URL = "theURL";
+    public static String theUUID = "theUUID";
     private final String LOG_TAG = MainActivity.class.getName();
     private final String noteCollection = "noteCollection";
     private RecyclerView mRecyclerView;
@@ -67,12 +78,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SearchView searchView;
     private FirebaseFirestore mFireStore;
     private FirebaseAuth mFirebaseAuth;
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mStorageReference;
     private DocumentReference mDocumentReference;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavView;
     private TextView mUserName;
     private ImageView mUserPhoto;
+    private LinearLayout mLinearLayout;
+    private ProgressBar mProgressBar;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -149,12 +164,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(mToolbar);
         mFireStore = FirebaseFirestore.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseStorage = FirebaseStorage.getInstance();
 
         mNavView = findViewById(R.id.navigation_view);
+        mLinearLayout = findViewById(R.id.linearLayout);
+        mProgressBar = findViewById(R.id.progress_bar);
 
         View headerLayout = mNavView.getHeaderView(0);
         mUserName = headerLayout.findViewById(R.id.user_name_text_view);
         mUserPhoto = headerLayout.findViewById(R.id.user_image_view);
+
         setupDrawerContent(mNavView);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -187,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseHelper = KeepReaderDbHelper.getInstance(this);
 
         mDocumentReference = mFireStore.document("users/" + mFirebaseAuth.getCurrentUser().getUid());
-
+        mStorageReference = mFirebaseStorage.getReference();
 
         mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
 
@@ -243,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         updateAllNotesIncludingCloud();
 
         mRecyclerView.setAdapter(mAdapter);
-
 
 
     }
@@ -321,17 +339,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch(view.getId()) {
+        switch (view.getId()) {
             // The add note button at bottom of Main is clicked.
             case R.id.add_note_button:
                 Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
                 startActivityForResult(i, NEW_NOTE_REQUEST);
                 break;
             case R.id.camera_action_button:
-                Intent intent = new Intent();
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_IMAGE);
+                startActivityForResult(intent, SELECT_IMAGE_REQUEST);
         }
     }
 
@@ -342,12 +359,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == NEW_NOTE_REQUEST) {
+        if (requestCode == SELECT_IMAGE_REQUEST) {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                makeToast("Cancelled");
+            } else {
+                getCameraImage(data);
+            }
+        } else if (requestCode == NEW_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
@@ -408,8 +429,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         }
+    }
 
+    private void getCameraImage(Intent data) {
+        if (data != null) {
+            try {
 
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), data.getData());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data1 = baos.toByteArray();
+                final String theImageUUID = UUID.randomUUID() + "";
+
+                String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
+                mStorageReference = mFirebaseStorage.getReference(path);
+
+                addImageButton.setEnabled(false);
+                mLinearLayout.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                UploadTask uploadTask = mStorageReference.putBytes(data1);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Log.e(LOG_TAG, "It didn't work");
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        addImageButton.setEnabled(true);
+                        mLinearLayout.setVisibility(View.VISIBLE);
+                        mProgressBar.setVisibility(View.GONE);
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Log.e(LOG_TAG, downloadUrl.toString());
+                        Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
+                        intent.putExtra(IMAGE_URL, downloadUrl.toString());
+                        intent.putExtra(theUUID, theImageUUID);
+                        startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore

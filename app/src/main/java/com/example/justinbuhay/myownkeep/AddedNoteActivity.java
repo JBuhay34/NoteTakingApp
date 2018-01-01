@@ -11,9 +11,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+
+import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
+import static com.example.justinbuhay.myownkeep.MainActivity.theUUID;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -23,6 +31,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private EditText noteDescription;
     private int notePosition = -1;
     private KeepReaderDbHelper databaseHelper;
+    private ImageView noteImage;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -61,6 +70,8 @@ public class AddedNoteActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
 
         saveButton = findViewById(R.id.save_button);
+        noteImage = findViewById(R.id.note_image_view);
+        noteImage.setVisibility(View.GONE);
         saveButton.setOnClickListener(new saveButtonListener());
 
         noteTitle = findViewById(R.id.titleEditText);
@@ -72,6 +83,12 @@ public class AddedNoteActivity extends AppCompatActivity {
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
             notePosition = intent.getIntExtra("position", -1);
 
+        } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(theUUID) != null) {
+            noteImage.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .using(new FirebaseImageLoader())
+                    .load(FirebaseStorage.getInstance().getReference("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + intent.getStringExtra(theUUID) + ".png"))
+                    .into(noteImage);
         }
     }
 
