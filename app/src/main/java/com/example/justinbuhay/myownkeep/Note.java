@@ -10,6 +10,7 @@ public class Note {
     private String noteDescription;
     private int noteID;
     private String uniqueStorageID;
+    private String notePath;
 
     public Note(String noteTitle, String noteDescription) {
         this.noteTitle = noteTitle;

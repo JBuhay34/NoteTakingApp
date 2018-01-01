@@ -32,6 +32,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private int notePosition = -1;
     private KeepReaderDbHelper databaseHelper;
     private ImageView noteImage;
+    private String pathForImage;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -85,9 +86,10 @@ public class AddedNoteActivity extends AppCompatActivity {
 
         } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(theUUID) != null) {
             noteImage.setVisibility(View.VISIBLE);
+            pathForImage = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + intent.getStringExtra(theUUID) + ".png";
             Glide.with(this)
                     .using(new FirebaseImageLoader())
-                    .load(FirebaseStorage.getInstance().getReference("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + intent.getStringExtra(theUUID) + ".png"))
+                    .load(FirebaseStorage.getInstance().getReference(pathForImage))
                     .into(noteImage);
         }
     }
@@ -108,7 +110,10 @@ public class AddedNoteActivity extends AppCompatActivity {
                     returnedInformationIntent.putExtra("position", notePosition);
                     returnedInformationIntent.putExtra("update", true);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
+                } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
+                    returnedInformationIntent.putExtra("thePath", pathForImage);
                 }
+
                 finish();
             }
         }

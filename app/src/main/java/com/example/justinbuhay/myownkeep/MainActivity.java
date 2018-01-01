@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int DELETE_NOTE_REQUEST = 2;
     public static final String NOTE_TITLE = "notetitle";
     public static final String ACTUAL_NOTE = "actualnote";
+    public static final String NOTE_IMAGE_PATH = "noteimagepath";
     public static int SELECT_IMAGE_REQUEST = 3;
     public static int ADD_THE_IMAGE_REQUEST = 4;
     public static String IMAGE_URL = "theURL";
@@ -357,7 +358,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == SELECT_IMAGE_REQUEST) {
+        if (requestCode == ADD_THE_IMAGE_REQUEST) {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                makeToast("Didn't work");
+            } else {
+                Log.e("MainActivity.class", data.getStringExtra("titleResult"));
+                Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
+                final String titleResult = data.getStringExtra("titleResult");
+                final String noteDescription = data.getStringExtra("noteDescriptionResult");
+                final String noteImagePath = data.getStringExtra("thePath");
+
+                Map<String, Object> noteToAdd = new HashMap<String, Object>();
+                noteToAdd.put(NOTE_TITLE, titleResult);
+                noteToAdd.put(ACTUAL_NOTE, noteDescription);
+                noteToAdd.put(NOTE_IMAGE_PATH, noteImagePath);
+
+                mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Note newNote = new Note(titleResult, noteDescription, documentReference.getId());
+                        Log.e(LOG_TAG, "newNote ID: " + newNote.getUniqueStorageID());
+
+                        noNotesFound.setVisibility(View.GONE);
+
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(LOG_TAG, "Error adding document", e);
+                    }
+                });
+
+                updateAllNotesIncludingCloud();
+            }
+        } else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Cancelled");
             } else {
@@ -462,6 +497,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
                         intent.putExtra(IMAGE_URL, downloadUrl.toString());
                         intent.putExtra(theUUID, theImageUUID);
+                        intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
                         startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
                     }
                 });
