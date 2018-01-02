@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mRecyclerView.setAdapter(mAdapter);
 
-        getSupportLoaderManager().initLoader(0, null, this).forceLoad();
+        getSupportLoaderManager().initLoader(0, null, MainActivity.this).forceLoad();
 
 
     }
@@ -278,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 makeToast("Sign out clicked!!!");
                 mFirebaseAuth.signOut();
                 Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+
                 startActivity(intent);
                 finish();
                 break;
@@ -367,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onSuccess(DocumentReference documentReference) {
 
                         noNotesFound.setVisibility(View.GONE);
-
+                        getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
 
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -377,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
+                getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
             }
         } else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -410,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
+                getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -426,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
-                    getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 } else {
                     String title = data.getStringExtra("titleResult");
@@ -441,7 +442,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
                     //databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
-                    getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 }
 
@@ -464,7 +465,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mStorageReference = mFirebaseStorage.getReference(path);
 
                 addImageButton.setEnabled(false);
-                mLinearLayout.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
 
                 UploadTask uploadTask = mStorageReference.putBytes(data1);
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    
+
     @Override
     public android.support.v4.content.Loader<LinkedList<Note>> onCreateLoader(int id, Bundle args) {
         return new NotesListLoader(this, databaseHelper, mDocumentReference);
@@ -505,7 +505,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<LinkedList<Note>> loader, LinkedList<Note> data) {
-        mAdapter.setmNotes(data);
+        mAdapter.setmNotes(databaseHelper.getAllNotes());
+        mAdapter.notifyDataSetChanged();
         mAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position, String noteTitle, String noteDescription, String notePath) {
@@ -520,6 +521,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+        mRecyclerView.setAdapter(mAdapter);
     }
 
     @Override

@@ -13,9 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
@@ -34,6 +38,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private ImageView noteImage;
     private String pathForImage;
     private String theUUID;
+    private ProgressBar progressBar;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -73,6 +78,7 @@ public class AddedNoteActivity extends AppCompatActivity {
 
         saveButton = findViewById(R.id.save_button);
         noteImage = findViewById(R.id.note_image_view);
+        progressBar = findViewById(R.id.addedactivity_progressbar);
         noteImage.setVisibility(View.GONE);
         saveButton.setOnClickListener(new saveButtonListener());
 
@@ -93,6 +99,7 @@ public class AddedNoteActivity extends AppCompatActivity {
             }
 
         } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(NOTE_IMAGE_UUID) != null) {
+            progressBar.setVisibility(View.VISIBLE);
             noteImage.setVisibility(View.VISIBLE);
             Log.e(LOG_TAG, "should be visible");
             pathForImage = intent.getStringExtra(IMAGE_URL);
@@ -100,7 +107,20 @@ public class AddedNoteActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(pathForImage)
                     .centerCrop()
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
                     .into(noteImage);
+
         }
     }
 

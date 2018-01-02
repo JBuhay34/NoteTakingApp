@@ -15,54 +15,55 @@
 
 
         <LinearLayout
-        android:id="@+id/linearLayout2"
+            android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+            android:orientation="vertical"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+            <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
+                android:elevation="4dp"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-        <EditText
-            android:id="@+id/titleEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginLeft="16dp"
-            android:background="@android:color/transparent"
-            android:hint="Title"
-            android:inputType="textPersonName"
-            android:lines="8" />
+            <EditText
+                android:id="@+id/titleEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_marginLeft="16dp"
+                android:background="@android:color/transparent"
+                android:hint="Title"
+                android:inputType="textPersonName"
+                android:lines="8" />
 
-        <EditText
-            android:id="@+id/noteEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_weight="8"
-            android:background="@android:color/transparent"
-            android:gravity="top|left"
-            android:hint="Note"
-            android:imeOptions="actionSend"
-            android:inputType="textMultiLine" />
+            <EditText
+                android:id="@+id/noteEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_weight="8"
+                android:background="@android:color/transparent"
+                android:gravity="top|left"
+                android:hint="Note"
+                android:imeOptions="actionSend"
+                android:inputType="textMultiLine" />
 
-        <ImageView
-            android:id="@+id/note_image_view"
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_weight="3"
-            android:rotation="90"
-            android:visibility="gone" />
+            <ImageView
+                android:id="@+id/note_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:layout_weight="3"
+                android:rotation="90"
+                android:visibility="gone" />
 
-    </LinearLayout>
+
+        </LinearLayout>
     </ScrollView>
 
     <android.support.design.widget.FloatingActionButton
@@ -82,5 +83,14 @@
         app:fabSize="auto"
 
         app:srcCompat="@mipmap/checkbox" />
+
+    <ProgressBar
+        android:id="@+id/addedactivity_progressbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
 
 </RelativeLayout>

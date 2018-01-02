@@ -64,8 +64,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     Toast.makeText(SignInActivity.this, "Welcome: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d(TAG, "User Logged out.");
-
-
                 }
             }
         };
@@ -82,6 +80,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
 
         mSignInButton = findViewById(R.id.sign_in_button);
         mSignInButton.setSize(SignInButton.SIZE_WIDE);
