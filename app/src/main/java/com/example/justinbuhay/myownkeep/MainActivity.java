@@ -35,15 +35,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.example.justinbuhay.myownkeep.database.NotesListLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -52,11 +49,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, android.support.v4.app.LoaderManager.LoaderCallbacks<LinkedList<Note>> {
 
     public static final int NEW_NOTE_REQUEST = 1;
     public static final int DELETE_NOTE_REQUEST = 2;
@@ -113,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     doMyOwnSearch(query);
 
                 } else {
-                    updateAllNotesIncludingCloud();
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return true;
@@ -127,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
                 } else {
-                    updateAllNotesIncludingCloud();
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return true;
@@ -222,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // This method performs the actual data-refresh operation.
                         // The method calls setRefreshing(false) when it's finished.
-                        updateAllNotesIncludingCloud();
+                        getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
                 }
@@ -263,10 +259,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-
-        updateAllNotesIncludingCloud();
-
         mRecyclerView.setAdapter(mAdapter);
+
+        getSupportLoaderManager().initLoader(0, null, this).forceLoad();
 
 
     }
@@ -395,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                updateAllNotesIncludingCloud();
+                getSupportLoaderManager().restartLoader(0, null, this);
             }
         } else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -428,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                updateAllNotesIncludingCloud();
+                getSupportLoaderManager().restartLoader(0, null, this);
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -444,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
-                    updateAllNotesIncludingCloud();
+                    getSupportLoaderManager().restartLoader(0, null, this);
                     noNotesFound.setVisibility(View.GONE);
                 } else {
                     String title = data.getStringExtra("titleResult");
@@ -459,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
                     //databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
-                    updateAllNotesIncludingCloud();
+                    getSupportLoaderManager().restartLoader(0, null, this);
                     noNotesFound.setVisibility(View.GONE);
                 }
 
@@ -515,6 +510,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public android.support.v4.content.Loader<LinkedList<Note>> onCreateLoader(int id, Bundle args) {
+        return new NotesListLoader(this, databaseHelper, mDocumentReference);
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<LinkedList<Note>> loader, LinkedList<Note> data) {
+        mAdapter.setmNotes(data);
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<LinkedList<Note>> loader) {
+
+    }
+
+    /*
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore
     private void updateAllNotesIncludingCloud() {
 
@@ -593,4 +604,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
     }
+    */
+
+
 }
