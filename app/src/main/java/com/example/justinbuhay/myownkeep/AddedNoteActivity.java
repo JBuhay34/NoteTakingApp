@@ -6,14 +6,22 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+
+import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
+import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_UUID;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -23,6 +31,9 @@ public class AddedNoteActivity extends AppCompatActivity {
     private EditText noteDescription;
     private int notePosition = -1;
     private KeepReaderDbHelper databaseHelper;
+    private ImageView noteImage;
+    private String pathForImage;
+    private String theUUID;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -61,6 +72,8 @@ public class AddedNoteActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
 
         saveButton = findViewById(R.id.save_button);
+        noteImage = findViewById(R.id.note_image_view);
+        noteImage.setVisibility(View.GONE);
         saveButton.setOnClickListener(new saveButtonListener());
 
         noteTitle = findViewById(R.id.titleEditText);
@@ -71,7 +84,31 @@ public class AddedNoteActivity extends AppCompatActivity {
             noteTitle.setText(intent.getStringExtra("titleResult"), TextView.BufferType.EDITABLE);
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
             notePosition = intent.getIntExtra("position", -1);
+            if (intent.getStringExtra("thePictureURL") != null) {
+                noteImage.setVisibility(View.VISIBLE);
+                Glide.with(this)
+                        .load(intent.getStringExtra("thePictureURL"))
+                        .centerCrop()
+                        .into(noteImage);
+            }
 
+        } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(NOTE_IMAGE_UUID) != null) {
+            noteImage.setVisibility(View.VISIBLE);
+            Log.e(LOG_TAG, "should be visible");
+            pathForImage = intent.getStringExtra(IMAGE_URL);
+            theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
+            Glide.with(this)
+                    .load(pathForImage)
+                    .centerCrop()
+                    .into(noteImage);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
+            FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
         }
     }
 
@@ -91,10 +128,14 @@ public class AddedNoteActivity extends AppCompatActivity {
                     returnedInformationIntent.putExtra("position", notePosition);
                     returnedInformationIntent.putExtra("update", true);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
+                } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
+                    returnedInformationIntent.putExtra("thePath", pathForImage);
+                    returnedInformationIntent.putExtra("theUUID", theUUID);
+                    setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
+
                 finish();
             }
         }
-        }
-
+    }
 }

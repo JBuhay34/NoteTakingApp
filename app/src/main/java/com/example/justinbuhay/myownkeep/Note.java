@@ -10,16 +10,12 @@ public class Note {
     private String noteDescription;
     private int noteID;
     private String uniqueStorageID;
+    private String notePath;
+    private String noteImageUUID;
 
     public Note(String noteTitle, String noteDescription) {
         this.noteTitle = noteTitle;
         this.noteDescription = noteDescription;
-    }
-
-    public Note(String noteTitle, String noteDescription, int noteID) {
-        this(noteTitle, noteDescription);
-        this.noteID = noteID;
-
     }
 
     public Note(String noteTitle, String noteDescription, String uniqueStorageID) {
@@ -27,18 +23,47 @@ public class Note {
         this.uniqueStorageID = uniqueStorageID;
     }
 
+    public Note(String noteTitle, String noteDescription, String uniqueStorageID, String notePath, String noteImageUUID) {
+        this(noteTitle, noteDescription, uniqueStorageID);
+        this.notePath = notePath;
+        this.noteImageUUID = noteImageUUID;
+    }
+
+
     public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID) {
         this(noteTitle, noteDescription, uniqueStorageID);
         this.noteID = noteID;
+    }
 
+    public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID, String notePath) {
+        this(noteTitle, noteDescription, uniqueStorageID, noteID);
+        this.notePath = notePath;
+    }
+
+    public Note(String noteTitle, String noteDescription, String uniqueStorageID, int noteID, String notePath, String noteImageUUID) {
+        this(noteTitle, noteDescription, uniqueStorageID, noteID, notePath);
+        this.noteImageUUID = noteImageUUID;
+    }
+
+    public String getNoteImageUUID() {
+        return noteImageUUID;
+    }
+
+    public void setNoteImageUUID(String noteImageUUID) {
+        this.noteImageUUID = noteImageUUID;
     }
 
     public String getUniqueStorageID() {
         return uniqueStorageID;
     }
 
-    public void setUniqueStorageID(String uniqueStorageID) {
-        this.uniqueStorageID = uniqueStorageID;
+
+    public String getNotePath() {
+        return notePath;
+    }
+
+    public void setNotePath(String notePath) {
+        this.notePath = notePath;
     }
 
     public int getNoteID() {
