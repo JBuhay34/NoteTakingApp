@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     doMyOwnSearch(query);
 
                 } else {
-                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return true;
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(LOG_TAG, "doMyOwnSearch onquery text");
 
                 } else {
-                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
+                    getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 }
                 return true;
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         // This method performs the actual data-refresh operation.
                         // The method calls setRefreshing(false) when it's finished.
-                        getSupportLoaderManager().restartLoader(0, null, MainActivity.this);
+                        getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
                 }
@@ -244,20 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         mAdapter = new NotesAdapter(this, databaseHelper.getAllNotes());
-        mAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position, String noteTitle, String noteDescription, String notePath) {
-                if (position != RecyclerView.NO_POSITION) {
-                    Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
-                    i.putExtra("position", position);
-                    i.putExtra("titleResult", noteTitle);
-                    i.putExtra("noteDescriptionResult", noteDescription);
-                    i.putExtra("thePictureURL", notePath);
-                    startActivityForResult(i, DELETE_NOTE_REQUEST);
 
-                }
-            }
-        });
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -390,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                getSupportLoaderManager().restartLoader(0, null, this);
+                getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
             }
         } else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -423,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-                getSupportLoaderManager().restartLoader(0, null, this);
+                getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
             }
         } else if (requestCode == DELETE_NOTE_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -439,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
-                    getSupportLoaderManager().restartLoader(0, null, this);
+                    getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 } else {
                     String title = data.getStringExtra("titleResult");
@@ -454,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     mDocumentReference.collection(noteCollection).document(databaseHelper.getAllNotes().get(position).getUniqueStorageID()).update(noteToAdd);
                     //databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), title, description);
-                    getSupportLoaderManager().restartLoader(0, null, this);
+                    getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
                     noNotesFound.setVisibility(View.GONE);
                 }
 
@@ -510,6 +497,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    
     @Override
     public android.support.v4.content.Loader<LinkedList<Note>> onCreateLoader(int id, Bundle args) {
         return new NotesListLoader(this, databaseHelper, mDocumentReference);
@@ -518,6 +506,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<LinkedList<Note>> loader, LinkedList<Note> data) {
         mAdapter.setmNotes(data);
+        mAdapter.setOnItemClickListener(new NotesAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, String noteTitle, String noteDescription, String notePath) {
+                if (position != RecyclerView.NO_POSITION) {
+                    Intent i = new Intent(MainActivity.this, AddedNoteActivity.class);
+                    i.putExtra("position", position);
+                    i.putExtra("titleResult", noteTitle);
+                    i.putExtra("noteDescriptionResult", noteDescription);
+                    i.putExtra("thePictureURL", notePath);
+                    startActivityForResult(i, DELETE_NOTE_REQUEST);
+
+                }
+            }
+        });
     }
 
     @Override
