@@ -196,8 +196,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
 
         mDrawerToggle.setDrawerIndicatorEnabled(false);
+        mToolbar.setTitle("");
+        mToolbar.setSubtitle("");
         mToolbar.setNavigationIcon(R.drawable.ic_action_name);
-
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
