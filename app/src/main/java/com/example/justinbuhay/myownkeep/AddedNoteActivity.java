@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -49,6 +50,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private KeepReaderDbHelper databaseHelper;
     private ImageView noteImage;
     private String pathForImage;
+    private String urlForImage;
     private String theUUID;
     private ProgressBar mImageProgressBar;
 
@@ -134,10 +136,13 @@ public class AddedNoteActivity extends AppCompatActivity {
             final String theImageUUID = UUID.randomUUID().toString();
             Log.e(LOG_TAG, theImageUUID + "Let's see");
 
-            String path = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theImageUUID + ".png";
+            final String path = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theImageUUID + ".png";
             StorageReference mStorageReference = FirebaseStorage.getInstance().getReference(path);
 
             UploadTask uploadTask = mStorageReference.putBytes(data1);
+            Snackbar mySnackbar = Snackbar.make(findViewById(R.id.the_relative_layout),
+                    "Uploading Image...", Snackbar.LENGTH_LONG);
+            mySnackbar.show();
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
@@ -150,6 +155,7 @@ public class AddedNoteActivity extends AppCompatActivity {
 
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    urlForImage = downloadUrl.toString();
                     Glide.with(AddedNoteActivity.this)
                             .load(downloadUrl)
                             .listener(new RequestListener<Uri, GlideDrawable>() {
@@ -200,7 +206,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                     returnedInformationIntent.putExtra("update", true);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
-                    returnedInformationIntent.putExtra("thePath", pathForImage);
+                    returnedInformationIntent.putExtra("thePath", urlForImage);
                     returnedInformationIntent.putExtra("theUUID", theUUID);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
