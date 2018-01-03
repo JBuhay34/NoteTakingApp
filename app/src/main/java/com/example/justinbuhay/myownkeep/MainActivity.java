@@ -474,14 +474,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
 
             Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
+
             intent.putExtra("intentdata", data);
             intent.putExtra("DocRefPath", path);
             intent.putExtra(NOTE_IMAGE_UUID, theImageUUID);
             startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
-
-                addImageButton.setEnabled(false);
-                mLinearLayout.setVisibility(View.GONE);
-                mProgressBar.setVisibility(View.VISIBLE);
 
 
         }

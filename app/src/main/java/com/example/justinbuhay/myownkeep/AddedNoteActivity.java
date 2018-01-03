@@ -3,6 +3,7 @@ package com.example.justinbuhay.myownkeep;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,9 +23,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -120,16 +118,21 @@ public class AddedNoteActivity extends AppCompatActivity {
 
     private void performImageRequestAction(Intent intent) {
         theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
-        mImageProgressBar.setVisibility(View.VISIBLE);
+        pathForImage = intent.getStringExtra("DocRefPath");
+        mImageProgressBar.setVisibility(View.GONE);
         noteImage.setVisibility(View.VISIBLE);
-        Log.e(LOG_TAG, "should be visible");
         Intent data = intent.getParcelableExtra("intentdata");
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), data.getData());
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
-            pathForImage = intent.getStringExtra("DocRefPath");
+        Log.e(LOG_TAG, "should be visible");
+
+
+        Bitmap bitmap;
+        bitmap = getRotatedBitmap(data);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+
+        noteImage.setImageBitmap(bitmap);
+
 
 
             byte[] data1 = baos.toByteArray();
@@ -156,6 +159,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
                     urlForImage = downloadUrl.toString();
+                    /*
                     Glide.with(AddedNoteActivity.this)
                             .load(downloadUrl)
                             .listener(new RequestListener<Uri, GlideDrawable>() {
@@ -172,14 +176,28 @@ public class AddedNoteActivity extends AppCompatActivity {
                             })
                             .centerCrop()
                             .into(noteImage);
+                    */
 
                 }
             });
 
+    }
+
+    private Bitmap getRotatedBitmap(Intent data) {
+
+        Bitmap bmp = null;
+        try {
+            bmp = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+
+
     }
+
 
     @Override
     public void onBackPressed() {
