@@ -5,10 +5,8 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -46,10 +44,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -367,6 +362,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Didn't work");
             } else {
+                addImageButton.setEnabled(true);
+                mLinearLayout.setVisibility(View.VISIBLE);
+                mProgressBar.setVisibility(View.GONE);
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
                 final String titleResult = data.getStringExtra("titleResult");
@@ -469,51 +467,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getCameraImage(Intent data) {
         if (data != null) {
-            try {
 
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), data.getData());
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] data1 = baos.toByteArray();
+
                 final String theImageUUID = UUID.randomUUID().toString();
-                Log.e(LOG_TAG, theImageUUID + "Let's see");
 
                 String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
-                mStorageReference = mFirebaseStorage.getReference(path);
+
+            Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
+            intent.putExtra("intentdata", data);
+            intent.putExtra("DocRefPath", path);
+            intent.putExtra(NOTE_IMAGE_UUID, theImageUUID);
+            startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
 
                 addImageButton.setEnabled(false);
                 mLinearLayout.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                UploadTask uploadTask = mStorageReference.putBytes(data1);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        Log.e(LOG_TAG, "It didn't work");
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        addImageButton.setEnabled(true);
-                        mLinearLayout.setVisibility(View.VISIBLE);
-                        mProgressBar.setVisibility(View.GONE);
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        Log.e(LOG_TAG, downloadUrl.toString());
-                        Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
-                        intent.putExtra(IMAGE_URL, downloadUrl.toString());
-                        intent.putExtra(NOTE_IMAGE_UUID, theImageUUID);
-                        intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
-                        startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
         }
+
     }
+
 
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore
     private void updateAllNotesIncludingCloud() {
