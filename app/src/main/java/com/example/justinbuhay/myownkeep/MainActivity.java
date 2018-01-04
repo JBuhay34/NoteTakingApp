@@ -413,8 +413,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (menuItem.getItemId()) {
             case R.id.sign_out_navigation:
                 makeToast("Sign out clicked!!!");
-                mFirebaseAuth.signOut();
                 Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+                intent.putExtra("signout", 5);
                 startActivity(intent);
                 finish();
                 break;

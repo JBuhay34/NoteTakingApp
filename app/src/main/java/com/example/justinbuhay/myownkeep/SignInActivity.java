@@ -11,7 +11,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
@@ -35,6 +37,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseFirestore mFireStore;
+    private GoogleSignInClient mGoogleSignInClient;
 
 
     private TextView mWelcomeTextView;
@@ -77,6 +80,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 .build();
 
 
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -88,6 +94,16 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
 
         mSignInButton.setOnClickListener(this);
+
+        Intent intent = getIntent();
+        if (intent.getIntExtra("signout", -1) == 5) {
+            //TODO make user sign out of google account
+            // Firebase sign out
+            mAuth.signOut();
+
+            // Google sign out
+            mGoogleSignInClient.signOut();
+        }
     }
 
     @Override
@@ -148,7 +164,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
