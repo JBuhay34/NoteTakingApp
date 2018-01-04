@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if ("primary".equalsIgnoreCase(type)) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
-                
+
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
@@ -395,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mFirebaseAuth.getCurrentUser() != null) {
             mUserName.setText(mFirebaseAuth.getCurrentUser().getEmail());
             Uri userPhoto = mFirebaseAuth.getCurrentUser().getPhotoUrl();
-            Glide.with(this).load(userPhoto).override(300, 300).into(mUserPhoto);
+            Glide.with(this).load(userPhoto).transform(new CircleTransform(this)).override(200, 200).into(mUserPhoto);
         }
 
         navigationView.setNavigationItemSelectedListener(

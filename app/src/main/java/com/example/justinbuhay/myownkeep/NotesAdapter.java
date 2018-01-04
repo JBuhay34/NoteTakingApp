@@ -52,7 +52,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
         holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
         if (mNotes.get(position).getNotePath() != null && mNotes.get(position).getNoteImageUUID() != null) {
             Log.e("NotesAdapter", position + "The notes aren't null");
-            Glide.with(mContext).load(mNotes.get(position).getNotePath()).override(400, 400).centerCrop().into(holder.mNoteImageView);
+            Glide.with(mContext).load(mNotes.get(position).getNotePath()).override(350, 400).centerCrop().into(holder.mNoteImageView);
             holder.mNoteImageView.setVisibility(View.VISIBLE);
         } else {
             Log.e("NotesAdapter", position + "The notes are null");

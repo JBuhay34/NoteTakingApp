@@ -51,6 +51,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private String urlForImage;
     private String theUUID;
     private ProgressBar mImageProgressBar;
+    private byte[] data1;
 
     public static Bitmap rotate(Bitmap bitmap, float degrees) {
         Matrix matrix = new Matrix();
@@ -162,7 +163,10 @@ public class AddedNoteActivity extends AppCompatActivity {
             noteImage.setImageBitmap(orientedBitmap);
 
 
-            byte[] data1 = baos.toByteArray();
+            data1 = baos.toByteArray();
+
+            // Pass in intent into savebutton on Add_Image_Request
+
             final String theImageUUID = UUID.randomUUID().toString();
             Log.e(LOG_TAG, theImageUUID + "Let's see");
 
@@ -275,6 +279,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                 } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
                     returnedInformationIntent.putExtra("theURL", urlForImage);
                     returnedInformationIntent.putExtra("theUUID", theUUID);
+                    returnedInformationIntent.putExtra("bytedata", data1);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
 
