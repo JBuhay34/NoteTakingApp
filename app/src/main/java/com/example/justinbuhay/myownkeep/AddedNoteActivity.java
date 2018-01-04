@@ -233,6 +233,9 @@ public class AddedNoteActivity extends AppCompatActivity {
             case ExifInterface.ORIENTATION_ROTATE_270:
                 return rotate(bm, 270);
 
+            case ExifInterface.ORIENTATION_UNDEFINED:
+                return rotate(bm, 270);
+
             case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
                 return flip(bm, true, false);
 
