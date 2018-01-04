@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,7 +24,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static com.example.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
+import static com.example.justinbuhay.myownkeep.MainActivity.DELETE_NOTE_REQUEST;
 import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_UUID;
 
 public class AddedNoteActivity extends AppCompatActivity {
@@ -45,12 +46,23 @@ public class AddedNoteActivity extends AppCompatActivity {
     private EditText noteTitle;
     private EditText noteDescription;
     private int notePosition = -1;
-    private KeepReaderDbHelper databaseHelper;
     private ImageView noteImage;
     private String pathForImage;
     private String urlForImage;
     private String theUUID;
     private ProgressBar mImageProgressBar;
+
+    public static Bitmap rotate(Bitmap bitmap, float degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    public static Bitmap flip(Bitmap bitmap, boolean horizontal, boolean vertical) {
+        Matrix matrix = new Matrix();
+        matrix.preScale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,7 +79,6 @@ public class AddedNoteActivity extends AppCompatActivity {
             case R.id.delete:
 
                 if (notePosition != -1) {
-
                     Intent i = new Intent();
                     i.putExtra("position", notePosition);
                     i.putExtra("update", false);
@@ -88,17 +99,18 @@ public class AddedNoteActivity extends AppCompatActivity {
         final Toolbar mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        // Initializing Views and listeners.
         saveButton = findViewById(R.id.save_button);
         noteImage = findViewById(R.id.note_image_view);
         mImageProgressBar = findViewById(R.id.image_progress_bar);
-        noteImage.setVisibility(View.GONE);
-        saveButton.setOnClickListener(new saveButtonListener());
-
         noteTitle = findViewById(R.id.titleEditText);
         noteDescription = findViewById(R.id.noteEditText);
+        saveButton.setOnClickListener(new saveButtonListener());
+        noteImage.setVisibility(View.GONE);
 
+        // Checks for Deleting Note Request, when the user clicks on an item from the recyclerview.
         Intent intent = getIntent();
-        if (intent.getStringExtra("titleResult") != null && intent.getStringExtra("noteDescriptionResult") != null) {
+        if (intent.getIntExtra("requestCode", -1) == DELETE_NOTE_REQUEST) {
             noteTitle.setText(intent.getStringExtra("titleResult"), TextView.BufferType.EDITABLE);
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
             notePosition = intent.getIntExtra("position", -1);
@@ -110,11 +122,23 @@ public class AddedNoteActivity extends AppCompatActivity {
                         .into(noteImage);
             }
 
+            // When the user clicks on the Camera button icon.
         } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
-            /*intent.getParcelableExtra("bitmap") != null && intent.getStringExtra("DocRefPath") != null*/
             performImageRequestAction(intent);
         }
     }
+
+        /*
+        Bitmap bmp = null;
+        try {
+            bmp = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+        */
 
     private void performImageRequestAction(Intent intent) {
         theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
@@ -125,14 +149,17 @@ public class AddedNoteActivity extends AppCompatActivity {
 
         Log.e(LOG_TAG, "should be visible");
 
+        try {
+            Bitmap bitmap;
 
-        Bitmap bitmap;
-        bitmap = getRotatedBitmap(data);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            bitmap = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
+            String pathforbitmap = intent.getStringExtra("ActualImagePath");
+            Log.e(LOG_TAG, "this is the path" + pathforbitmap);
+            Bitmap orientedBitmap = modifyOrientation(bitmap, pathforbitmap.toString());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
-        noteImage.setImageBitmap(bitmap);
-
+            noteImage.setImageBitmap(orientedBitmap);
 
 
             byte[] data1 = baos.toByteArray();
@@ -181,27 +208,46 @@ public class AddedNoteActivity extends AppCompatActivity {
                 }
             });
 
-    }
-
-    private Bitmap getRotatedBitmap(Intent data) {
-
-        Bitmap bmp = null;
-        try {
-            bmp = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
-        return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-
 
     }
 
+    // Uses ExifInterface class to fix the orientation of image/bitmap
+    private Bitmap modifyOrientation(Bitmap bm, String image_path) throws IOException {
+        ExifInterface ei = new ExifInterface(image_path);
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        Log.e(LOG_TAG, "Orientation is " + orientation);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotate(bm, 0);
+
+            case ExifInterface.ORIENTATION_NORMAL:
+                return rotate(bm, 270);
+
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotate(bm, 180);
+
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotate(bm, 270);
+
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                return flip(bm, true, false);
+
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                return flip(bm, false, true);
+
+            default:
+                return bm;
+        }
+    }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        // Make sure to delete the image that was uploaded on Firebase if the user cancels the note.
         if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
             FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
         }
@@ -224,7 +270,7 @@ public class AddedNoteActivity extends AppCompatActivity {
                     returnedInformationIntent.putExtra("update", true);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
-                    returnedInformationIntent.putExtra("thePath", urlForImage);
+                    returnedInformationIntent.putExtra("theURL", urlForImage);
                     returnedInformationIntent.putExtra("theUUID", theUUID);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
