@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,6 +52,8 @@ public class AddedNoteActivity extends AppCompatActivity {
     private String urlForImage;
     private String theUUID;
     private ProgressBar mImageProgressBar;
+    private ImageButton mLeftRotateButton;
+    private ImageButton mRightRotateButton;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,8 +94,14 @@ public class AddedNoteActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.save_button);
         noteImage = findViewById(R.id.note_image_view);
         mImageProgressBar = findViewById(R.id.image_progress_bar);
+        mLeftRotateButton = findViewById(R.id.rotate_left_button);
+        mRightRotateButton = findViewById(R.id.rotate_right_button);
         noteImage.setVisibility(View.GONE);
         saveButton.setOnClickListener(new saveButtonListener());
+        mLeftRotateButton.setOnClickListener(new RotateButtonListener());
+        mRightRotateButton.setOnClickListener(new RotateButtonListener());
+
+
 
         noteTitle = findViewById(R.id.titleEditText);
         noteDescription = findViewById(R.id.noteEditText);
@@ -116,6 +125,39 @@ public class AddedNoteActivity extends AppCompatActivity {
         }
     }
 
+    private class RotateButtonListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View view) {
+            if(view == mLeftRotateButton){
+
+                theImage = rotateBitmap(true);
+
+                noteImage.setImageBitmap(theImage);
+            } else if(view == mRightRotateButton){
+
+                theImage = rotateBitmap(false);
+
+                noteImage.setImageBitmap(theImage);
+            }
+        }
+    }
+
+    private Bitmap rotateBitmap(boolean isItLeft){
+
+        Matrix matrix = new Matrix();
+        if(isItLeft){
+            matrix.postRotate(theCurrentRotation + 90);
+        } else if (!isItLeft){
+            Log.e(LOG_TAG, "rightRotateCalled");
+            matrix.postRotate(theCurrentRotation - 90);
+
+        }
+
+        return Bitmap.createBitmap(theImage, 0, 0, theImage.getWidth(), theImage.getHeight(), matrix, true);
+
+    }
+
     private void performImageRequestAction(Intent intent) {
         theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
         pathForImage = intent.getStringExtra("DocRefPath");
@@ -124,16 +166,14 @@ public class AddedNoteActivity extends AppCompatActivity {
         Intent data = intent.getParcelableExtra("intentdata");
 
         Log.e(LOG_TAG, "should be visible");
+        Bitmap theBitmap;
+        try {
+            theBitmap = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
+            theImage = getRotatedBitmap(theBitmap);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            theImage.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
-
-        Bitmap bitmap;
-        bitmap = getRotatedBitmap(data);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-
-        noteImage.setImageBitmap(bitmap);
-
-
+            noteImage.setImageBitmap(theImage);
 
             byte[] data1 = baos.toByteArray();
             final String theImageUUID = UUID.randomUUID().toString();
@@ -180,19 +220,18 @@ public class AddedNoteActivity extends AppCompatActivity {
 
                 }
             });
-
-    }
-
-    private Bitmap getRotatedBitmap(Intent data) {
-
-        Bitmap bmp = null;
-        try {
-            bmp = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+
+
+    private Bitmap getRotatedBitmap(Bitmap bmp) {
+
         Matrix matrix = new Matrix();
-        matrix.postRotate(90);
+        matrix.postRotate(theCurrentRotation);
         return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
 
 
