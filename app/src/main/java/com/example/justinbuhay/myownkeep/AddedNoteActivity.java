@@ -2,6 +2,7 @@ package com.example.justinbuhay.myownkeep;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -19,8 +20,8 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 
-import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_URL;
-import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_UUID;
+import static com.example.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
+import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_BITMAP;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -32,6 +33,7 @@ public class AddedNoteActivity extends AppCompatActivity {
     private ImageView noteImage;
     private String pathForImage;
     private String theUUID;
+    private byte[] dataImage;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -78,6 +80,7 @@ public class AddedNoteActivity extends AppCompatActivity {
         noteDescription = findViewById(R.id.noteEditText);
 
         Intent intent = getIntent();
+        // Called when the user clicks on an view from the MainActivity.
         if (intent.getStringExtra("titleResult") != null && intent.getStringExtra("noteDescriptionResult") != null) {
             noteTitle.setText(intent.getStringExtra("titleResult"), TextView.BufferType.EDITABLE);
             noteDescription.setText(intent.getStringExtra("noteDescriptionResult"), TextView.BufferType.EDITABLE);
@@ -90,22 +93,20 @@ public class AddedNoteActivity extends AppCompatActivity {
                         .into(noteImage);
             }
 
-        } else if (intent.getStringExtra(IMAGE_URL) != null && intent.getStringExtra(NOTE_IMAGE_UUID) != null) {
+            //
+        } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             noteImage.setVisibility(View.VISIBLE);
             Log.e(LOG_TAG, "should be visible");
-            pathForImage = intent.getStringExtra(IMAGE_URL);
-            theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
-            Glide.with(this)
-                    .load(pathForImage)
-                    .centerCrop()
-                    .into(noteImage);
+            Uri bitmapuri = Uri.parse(intent.getStringExtra(NOTE_IMAGE_BITMAP));
+
+            noteImage.setImageURI(bitmapuri);
         }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
+        if (getIntent().getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
         }
     }
@@ -127,9 +128,8 @@ public class AddedNoteActivity extends AppCompatActivity {
                     returnedInformationIntent.putExtra("position", notePosition);
                     returnedInformationIntent.putExtra("update", true);
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
-                } else if (getIntent().getIntExtra("requestCode", -1) == MainActivity.ADD_THE_IMAGE_REQUEST) {
-                    returnedInformationIntent.putExtra("thePath", pathForImage);
-                    returnedInformationIntent.putExtra("theUUID", theUUID);
+                } else if (getIntent().getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
+
                     setResult(Activity.RESULT_OK, returnedInformationIntent);
                 }
 

@@ -1,9 +1,11 @@
 package com.example.justinbuhay.myownkeep;
 
+import android.Manifest.permission;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -13,6 +15,8 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -74,14 +78,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String ACTUAL_NOTE = "actualnote";
     public static final String NOTE_IMAGE_PATH = "noteimagepath";
     public static final String NOTE_IMAGE_UUID = "noteimageuuid";
+    public static final String NOTE_IMAGE_BYTE_ARRAY = "bytearray";
+    public static final String NOTE_IMAGE_BITMAP = "noteimagebitmap";
+    private static final int REQUEST_PERMISSION_WRITE_STORAGE = 210;
     public static int SELECT_IMAGE_REQUEST = 3;
     public static int ADD_THE_IMAGE_REQUEST = 4;
-    public static String IMAGE_URL = "theURL";
-
     private final String noteCollection = "noteCollection";
-
     private final String LOG_TAG = MainActivity.class.getName();
-
+    private byte[] data1;
     // Activity items
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -296,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    // This method sets up the navigation drawer.
     private void setupDrawerContent(NavigationView navigationView) {
 
         if (mFirebaseAuth.getCurrentUser() != null) {
@@ -387,6 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        // When the user clicks the savebutton after importing a picture with a note
         if (requestCode == ADD_THE_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Didn't work");
@@ -395,32 +401,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
                 final String titleResult = data.getStringExtra("titleResult");
                 final String noteDescription = data.getStringExtra("noteDescriptionResult");
-                final String noteImagePath = data.getStringExtra("thePath");
-                final String noteImageUUID = data.getStringExtra("theUUID");
 
-                Map<String, Object> noteToAdd = new HashMap<String, Object>();
-                noteToAdd.put(NOTE_TITLE, titleResult);
-                noteToAdd.put(ACTUAL_NOTE, noteDescription);
-                noteToAdd.put(NOTE_IMAGE_PATH, noteImagePath);
-                noteToAdd.put(NOTE_IMAGE_UUID, noteImageUUID);
+                // theImageUUID is the name of the image going into FirebaseStorage
+                final String noteImageUUID = UUID.randomUUID().toString();
+                Log.e(LOG_TAG, noteImageUUID + "Let's see");
+                final String noteImagePath = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + noteImageUUID + ".png";
+                mStorageReference = mFirebaseStorage.getReference(noteImagePath);
 
-                mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                UploadTask uploadTask = mStorageReference.putBytes(data1);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
-
-                        noNotesFound.setVisibility(View.GONE);
-
-
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Log.e(LOG_TAG, "It didn't work");
                     }
-                }).addOnFailureListener(new OnFailureListener() {
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(LOG_TAG, "Error adding document", e);
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Log.e(LOG_TAG, downloadUrl.toString());
+                        String noteImageUrl = downloadUrl.toString();
+
+                        Map<String, Object> noteToAdd = new HashMap<String, Object>();
+                        noteToAdd.put(NOTE_TITLE, titleResult);
+                        noteToAdd.put(ACTUAL_NOTE, noteDescription);
+                        noteToAdd.put(NOTE_IMAGE_PATH, noteImageUrl);
+                        noteToAdd.put(NOTE_IMAGE_UUID, noteImageUUID);
+
+                        mFireStore.collection("users").document(mFirebaseAuth.getCurrentUser().getUid()).collection(noteCollection).add(noteToAdd).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            @Override
+                            public void onSuccess(DocumentReference documentReference) {
+
+                                noNotesFound.setVisibility(View.GONE);
+
+
+                                updateAllNotesIncludingCloud();
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w(LOG_TAG, "Error adding document", e);
+                            }
+                        });
+
                     }
                 });
 
-                updateAllNotesIncludingCloud();
+
             }
+            // Called when the user clicks the camera button at bottom of screen.
         } else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Cancelled");
@@ -492,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getCameraImage(Intent data) {
+
         if (data != null) {
             try {
 
@@ -501,42 +533,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(LOG_TAG, "this is the path" + pathforbitmap);
                 Bitmap orientedBitmap = modifyOrientation(bitmap, pathforbitmap.toString());
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                final String theImageUUID = UUID.randomUUID().toString();
-                Log.e(LOG_TAG, theImageUUID + "Let's see");
+                orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
 
-                byte[] data1 = baos.toByteArray();
+                requestPermissionForWritable();
+                Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(MainActivity.this.getContentResolver(), orientedBitmap, "theims", null));
 
-                String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
-                mStorageReference = mFirebaseStorage.getReference(path);
+
+                data1 = baos.toByteArray();
+
+
+                Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
+
+                intent.putExtra(NOTE_IMAGE_BITMAP, uri.toString());
+                intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
+                startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
 
                 addImageButton.setEnabled(false);
-                mLinearLayout.setVisibility(View.GONE);
-                mProgressBar.setVisibility(View.VISIBLE);
 
-                UploadTask uploadTask = mStorageReference.putBytes(data1);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        Log.e(LOG_TAG, "It didn't work");
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        addImageButton.setEnabled(true);
-                        mLinearLayout.setVisibility(View.VISIBLE);
-                        mProgressBar.setVisibility(View.GONE);
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        Log.e(LOG_TAG, downloadUrl.toString());
-                        Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
-                        intent.putExtra(IMAGE_URL, downloadUrl.toString());
-                        intent.putExtra(NOTE_IMAGE_UUID, theImageUUID);
-                        intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
-                        startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
-                    }
-                });
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -710,5 +723,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         });
 
+    }
+
+    //TODO Fix these permission methods later on.
+    private void requestPermissionForWritable() {
+        if (ContextCompat.checkSelfPermission(this,
+                permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSION_WRITE_STORAGE);
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_WRITE_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
     }
 }
