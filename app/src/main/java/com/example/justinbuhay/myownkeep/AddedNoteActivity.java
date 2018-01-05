@@ -1,6 +1,7 @@
 package com.example.justinbuhay.myownkeep;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -129,18 +130,6 @@ public class AddedNoteActivity extends AppCompatActivity {
         }
     }
 
-        /*
-        Bitmap bmp = null;
-        try {
-            bmp = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), data.getData());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
-        return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-        */
-
     private void performImageRequestAction(Intent intent) {
         theUUID = intent.getStringExtra(NOTE_IMAGE_UUID);
         pathForImage = intent.getStringExtra("DocRefPath");
@@ -157,8 +146,9 @@ public class AddedNoteActivity extends AppCompatActivity {
             String pathforbitmap = intent.getStringExtra("ActualImagePath");
             Log.e(LOG_TAG, "this is the path" + pathforbitmap);
             Bitmap orientedBitmap = modifyOrientation(bitmap, pathforbitmap.toString());
+            Bitmap scaledDownBitmap = scaleDownBitmap(orientedBitmap, 100, this);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            scaledDownBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
 
             noteImage.setImageBitmap(orientedBitmap);
 
@@ -170,7 +160,7 @@ public class AddedNoteActivity extends AppCompatActivity {
             final String theImageUUID = UUID.randomUUID().toString();
             Log.e(LOG_TAG, theImageUUID + "Let's see");
 
-            final String path = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theImageUUID + ".png";
+            String path = "users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theImageUUID + ".png";
             StorageReference mStorageReference = FirebaseStorage.getInstance().getReference(path);
 
             UploadTask uploadTask = mStorageReference.putBytes(data1);
@@ -216,6 +206,18 @@ public class AddedNoteActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    public static Bitmap scaleDownBitmap(Bitmap photo, int newHeight, Context context) {
+
+        final float densityMultiplier = context.getResources().getDisplayMetrics().density;
+
+        int h = (int) (newHeight * densityMultiplier);
+        int w = (int) (h * photo.getWidth() / ((double) photo.getHeight()));
+
+        photo = Bitmap.createScaledBitmap(photo, w, h, true);
+
+        return photo;
     }
 
     // Uses ExifInterface class to fix the orientation of image/bitmap

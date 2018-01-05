@@ -97,7 +97,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
         Intent intent = getIntent();
         if (intent.getIntExtra("signout", -1) == 5) {
-            //TODO make user sign out of google account
             // Firebase sign out
             mAuth.signOut();
 
