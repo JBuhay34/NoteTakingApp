@@ -5,8 +5,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,18 +20,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.storage.FirebaseStorage;
+import com.example.justinbuhay.myownkeep.asynctasks.LoadingImageAyncTaskLoader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 import static com.example.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
 import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_PATH_FOR_PHOTOS;
 import static com.example.justinbuhay.myownkeep.MainActivity.INTENT_DATA;
 
-public class AddedNoteActivity extends AppCompatActivity {
+public class AddedNoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Bitmap> {
 
     private final String LOG_TAG = AddedNoteActivity.class.getName();
     private FloatingActionButton saveButton;
@@ -38,9 +34,11 @@ public class AddedNoteActivity extends AppCompatActivity {
     private EditText noteDescription;
     private int notePosition = -1;
     private ImageView noteImage;
-    private String pathForImage;
-    private String theUUID;
-    private byte[] dataImage;
+    private String pathforbitmap;
+    private Bitmap bitmap;
+    private Uri uriForBitmap;
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -100,41 +98,34 @@ public class AddedNoteActivity extends AppCompatActivity {
                         .into(noteImage);
             }
 
-            //
+            // Called when the user clicks on an image from their photos.
         } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             noteImage.setVisibility(View.VISIBLE);
             Log.e(LOG_TAG, "should be visible");
 
             //TODO set this up on an async task, because too much info is being loaded on main thread.
+            uriForBitmap = Uri.parse(intent.getStringExtra(INTENT_DATA));
+            pathforbitmap = intent.getStringExtra(IMAGE_PATH_FOR_PHOTOS);
+            getSupportLoaderManager().initLoader(0, null, this).forceLoad();
 
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), Uri.parse(intent.getStringExtra(INTENT_DATA)));
-                String pathforbitmap = intent.getStringExtra(IMAGE_PATH_FOR_PHOTOS);
-
-                Log.e(LOG_TAG, "this is the path" + pathforbitmap);
-                Bitmap orientedBitmap = null;
-
-                orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                noteImage.setImageBitmap(orientedBitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            //Uri bitmapuri = Uri.parse(intent.getStringExtra(NOTE_IMAGE_BITMAP));
-            //noteImage.setImageURI(bitmapuri);
         }
     }
 
+
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        if (getIntent().getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
-            FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
-        }
+    public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
+        return new LoadingImageAyncTaskLoader(this, uriForBitmap, pathforbitmap, LOG_TAG);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
+        bitmap = data;
+        noteImage.setImageBitmap(bitmap);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Bitmap> loader) {
+
     }
 
 
