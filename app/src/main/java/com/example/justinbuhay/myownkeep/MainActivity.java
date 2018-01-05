@@ -438,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 updateAllNotesIncludingCloud();
 
+
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
@@ -548,7 +549,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
                 startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
 
-                addImageButton.setEnabled(false);
 
             } catch (IOException e) {
                 e.printStackTrace();
