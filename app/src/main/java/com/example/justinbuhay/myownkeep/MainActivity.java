@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -409,6 +410,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mStorageReference = mFirebaseStorage.getReference(noteImagePath);
 
                 UploadTask uploadTask = mStorageReference.putBytes(data1);
+                Snackbar mySnackbar = Snackbar.make(findViewById(R.id.the_main_relative_layout),
+                        "Uploading Image...", Snackbar.LENGTH_LONG);
+                mySnackbar.show();
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
