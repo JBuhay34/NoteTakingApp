@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.example.justinbuhay.myownkeep.glidefeature.CircleTransform;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mFirebaseAuth.getCurrentUser() != null) {
             mUserName.setText(mFirebaseAuth.getCurrentUser().getEmail());
             Uri userPhoto = mFirebaseAuth.getCurrentUser().getPhotoUrl();
-            Glide.with(this).load(userPhoto).override(300, 300).into(mUserPhoto);
+            Glide.with(this).load(userPhoto).transform(new CircleTransform(this)).override(200, 200).into(mUserPhoto);
         }
 
         navigationView.setNavigationItemSelectedListener(
@@ -294,8 +295,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (menuItem.getItemId()) {
             case R.id.sign_out_navigation:
                 makeToast("Sign out clicked!!!");
-                mFirebaseAuth.signOut();
                 Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+                intent.putExtra("signout", 5);
                 startActivity(intent);
                 finish();
                 break;

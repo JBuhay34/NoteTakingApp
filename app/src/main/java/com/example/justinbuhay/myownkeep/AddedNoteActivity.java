@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 
@@ -30,7 +29,6 @@ public class AddedNoteActivity extends AppCompatActivity {
     private EditText noteTitle;
     private EditText noteDescription;
     private int notePosition = -1;
-    private KeepReaderDbHelper databaseHelper;
     private ImageView noteImage;
     private String pathForImage;
     private String theUUID;
@@ -111,6 +109,7 @@ public class AddedNoteActivity extends AppCompatActivity {
             FirebaseStorage.getInstance().getReference().child("users/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + theUUID + ".png").delete();
         }
     }
+
 
     private class saveButtonListener implements View.OnClickListener {
 
