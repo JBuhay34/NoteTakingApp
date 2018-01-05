@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -50,7 +52,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,8 +66,10 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    // Request constants
     public static final int NEW_NOTE_REQUEST = 1;
     public static final int DELETE_NOTE_REQUEST = 2;
+    // Extras for intent Constants
     public static final String NOTE_TITLE = "notetitle";
     public static final String ACTUAL_NOTE = "actualnote";
     public static final String NOTE_IMAGE_PATH = "noteimagepath";
@@ -68,9 +77,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int SELECT_IMAGE_REQUEST = 3;
     public static int ADD_THE_IMAGE_REQUEST = 4;
     public static String IMAGE_URL = "theURL";
-    public static String theUUID = "theUUID";
-    private final String LOG_TAG = MainActivity.class.getName();
+
     private final String noteCollection = "noteCollection";
+
+    private final String LOG_TAG = MainActivity.class.getName();
+
+    // Activity items
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private NotesAdapter mAdapter;
@@ -92,6 +104,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView mUserPhoto;
     private LinearLayout mLinearLayout;
     private ProgressBar mProgressBar;
+
+    private static Bitmap rotate(Bitmap bitmap, float degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private static Bitmap flip(Bitmap bitmap, boolean horizontal, boolean vertical) {
+        Matrix matrix = new Matrix();
+        matrix.preScale(horizontal ? -1 : 1, vertical ? -1 : 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -360,7 +384,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -472,12 +495,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (data != null) {
             try {
 
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), data.getData());
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), data.getData());
+                String pathforbitmap = getImagePathFromInputStreamUri(data.getData());
+
+                Log.e(LOG_TAG, "this is the path" + pathforbitmap);
+                Bitmap orientedBitmap = modifyOrientation(bitmap, pathforbitmap.toString());
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] data1 = baos.toByteArray();
+                orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 final String theImageUUID = UUID.randomUUID().toString();
                 Log.e(LOG_TAG, theImageUUID + "Let's see");
+
+                byte[] data1 = baos.toByteArray();
 
                 String path = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + theImageUUID + ".png";
                 mStorageReference = mFirebaseStorage.getReference(path);
@@ -513,6 +541,95 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 e.printStackTrace();
             }
 
+        }
+    }
+
+    public String getImagePathFromInputStreamUri(Uri uri) {
+        InputStream inputStream = null;
+        String filePath = null;
+
+        if (uri.getAuthority() != null) {
+            try {
+                inputStream = getContentResolver().openInputStream(uri); // context needed
+                File photoFile = createTemporalFileFrom(inputStream);
+
+                filePath = photoFile.getPath();
+
+            } catch (FileNotFoundException e) {
+                // log
+            } catch (IOException e) {
+                // log
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return filePath;
+    }
+
+    private File createTemporalFileFrom(InputStream inputStream) throws IOException {
+        File targetFile = null;
+
+        if (inputStream != null) {
+            int read;
+            byte[] buffer = new byte[8 * 1024];
+
+            targetFile = createTemporalFile();
+            OutputStream outputStream = new FileOutputStream(targetFile);
+
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            outputStream.flush();
+
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return targetFile;
+    }
+
+    private File createTemporalFile() {
+        return new File(getExternalCacheDir(), "tempFile.jpg"); // context needed
+    }
+
+    // Uses ExifInterface class to fix the orientation of image/bitmap
+    private Bitmap modifyOrientation(Bitmap bm, String image_path) throws IOException {
+        ExifInterface ei = new ExifInterface(image_path);
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        Log.e(LOG_TAG, "Orientation is " + orientation);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotate(bm, 0);
+
+            case ExifInterface.ORIENTATION_NORMAL:
+                return rotate(bm, 270);
+
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotate(bm, 180);
+
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotate(bm, 270);
+
+            case ExifInterface.ORIENTATION_UNDEFINED:
+                return rotate(bm, 270);
+
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                return flip(bm, true, false);
+
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                return flip(bm, false, true);
+
+            default:
+                return bm;
         }
     }
 
