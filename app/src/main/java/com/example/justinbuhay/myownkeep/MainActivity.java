@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.justinbuhay.myownkeep.asynctasks.GettingImagePathAsyncTaskLoader;
 import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
 import com.example.justinbuhay.myownkeep.glidefeature.CircleTransform;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -58,10 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.example.justinbuhay.myownkeep.HelperMethods.getImagePathFromInputStreamUri;
 import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, android.support.v4.app.LoaderManager.LoaderCallbacks<String> {
 
     // Request constants
     public static final int NEW_NOTE_REQUEST = 1;
@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int ADD_THE_IMAGE_REQUEST = 4;
     private final String noteCollection = "noteCollection";
     private final String LOG_TAG = MainActivity.class.getName();
+
+    private String pathforbitmap;
+    private Uri uriFromData;
     private byte[] data1;
     // Activity items
     private RecyclerView mRecyclerView;
@@ -209,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
 
         mDrawerToggle.setDrawerIndicatorEnabled(false);
-        mToolbar.setTitle("");
-        mToolbar.setSubtitle("");
+        //mToolbar.setTitle("");
+        //mToolbar.setSubtitle("");
         mToolbar.setNavigationIcon(R.drawable.ic_action_name);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -512,35 +515,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getCameraImage(Intent data) {
 
         if (data != null) {
-            try {
 
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), data.getData());
-                String pathforbitmap = getImagePathFromInputStreamUri(this, data.getData());
+            //TODO call the asynctasklaoder to get the image path. then implement all the other lines onto the onLoadFinished.
+            uriFromData = data.getData();
+            getSupportLoaderManager().initLoader(0, null, MainActivity.this).forceLoad();
 
-                Log.e(LOG_TAG, "this is the path" + pathforbitmap);
-                Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-
-
-                data1 = baos.toByteArray();
-
-
-                Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
-
-                intent.putExtra(INTENT_DATA, data.getData().toString());
-                intent.putExtra(IMAGE_PATH_FOR_PHOTOS, pathforbitmap);
-                intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
-                startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
         }
     }
 
+
+    @Override
+    public android.support.v4.content.Loader<String> onCreateLoader(int id, Bundle args) {
+        return new GettingImagePathAsyncTaskLoader(this, uriFromData);
+    }
+
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<String> loader, String data) {
+        pathforbitmap = data;
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), uriFromData);
+
+
+            Log.e(LOG_TAG, "this is the path" + pathforbitmap);
+            Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+
+
+            data1 = baos.toByteArray();
+
+
+            Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
+
+            intent.putExtra(INTENT_DATA, uriFromData.toString());
+            intent.putExtra(IMAGE_PATH_FOR_PHOTOS, pathforbitmap);
+            intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
+            startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<String> loader) {
+
+    }
 
 
 
@@ -623,6 +645,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
     }
-
 
 }
