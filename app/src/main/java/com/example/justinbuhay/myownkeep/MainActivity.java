@@ -1,23 +1,17 @@
 package com.example.justinbuhay.myownkeep;
 
-import android.Manifest.permission;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -57,17 +51,15 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.example.justinbuhay.myownkeep.HelperMethods.getImagePathFromInputStreamUri;
+import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -79,9 +71,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String ACTUAL_NOTE = "actualnote";
     public static final String NOTE_IMAGE_PATH = "noteimagepath";
     public static final String NOTE_IMAGE_UUID = "noteimageuuid";
-    public static final String NOTE_IMAGE_BYTE_ARRAY = "bytearray";
+    public static final String INTENT_DATA = "intentdata";
     public static final String NOTE_IMAGE_BITMAP = "noteimagebitmap";
-    private static final int REQUEST_PERMISSION_WRITE_STORAGE = 210;
+    public static final String IMAGE_PATH_FOR_PHOTOS = "googlephotospath";
+
     public static int SELECT_IMAGE_REQUEST = 3;
     public static int ADD_THE_IMAGE_REQUEST = 4;
     private final String noteCollection = "noteCollection";
@@ -110,17 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout mLinearLayout;
     private ProgressBar mProgressBar;
 
-    private static Bitmap rotate(Bitmap bitmap, float degrees) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degrees);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
 
-    private static Bitmap flip(Bitmap bitmap, boolean horizontal, boolean vertical) {
-        Matrix matrix = new Matrix();
-        matrix.preScale(horizontal ? -1 : 1, vertical ? -1 : 1);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -422,7 +405,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
                         Log.e(LOG_TAG, downloadUrl.toString());
                         String noteImageUrl = downloadUrl.toString();
@@ -533,15 +515,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
 
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), data.getData());
-                String pathforbitmap = getImagePathFromInputStreamUri(data.getData());
+                String pathforbitmap = getImagePathFromInputStreamUri(this, data.getData());
 
                 Log.e(LOG_TAG, "this is the path" + pathforbitmap);
-                Bitmap orientedBitmap = modifyOrientation(bitmap, pathforbitmap.toString());
+                Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-
-                requestPermissionForWritable();
-                Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(MainActivity.this.getContentResolver(), orientedBitmap, "theims", null));
 
 
                 data1 = baos.toByteArray();
@@ -549,7 +528,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 Intent intent = new Intent(MainActivity.this, AddedNoteActivity.class);
 
-                intent.putExtra(NOTE_IMAGE_BITMAP, uri.toString());
+                intent.putExtra(INTENT_DATA, data.getData().toString());
+                intent.putExtra(IMAGE_PATH_FOR_PHOTOS, pathforbitmap);
                 intent.putExtra("requestCode", ADD_THE_IMAGE_REQUEST);
                 startActivityForResult(intent, ADD_THE_IMAGE_REQUEST);
 
@@ -561,94 +541,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public String getImagePathFromInputStreamUri(Uri uri) {
-        InputStream inputStream = null;
-        String filePath = null;
 
-        if (uri.getAuthority() != null) {
-            try {
-                inputStream = getContentResolver().openInputStream(uri); // context needed
-                File photoFile = createTemporalFileFrom(inputStream);
 
-                filePath = photoFile.getPath();
 
-            } catch (FileNotFoundException e) {
-                // log
-            } catch (IOException e) {
-                // log
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return filePath;
-    }
-
-    private File createTemporalFileFrom(InputStream inputStream) throws IOException {
-        File targetFile = null;
-
-        if (inputStream != null) {
-            int read;
-            byte[] buffer = new byte[8 * 1024];
-
-            targetFile = createTemporalFile();
-            OutputStream outputStream = new FileOutputStream(targetFile);
-
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
-            }
-            outputStream.flush();
-
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return targetFile;
-    }
-
-    private File createTemporalFile() {
-        return new File(getExternalCacheDir(), "tempFile.jpg"); // context needed
-    }
-
-    // Uses ExifInterface class to fix the orientation of image/bitmap
-    private Bitmap modifyOrientation(Bitmap bm, String image_path) throws IOException {
-        ExifInterface ei = new ExifInterface(image_path);
-        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        Log.e(LOG_TAG, "Orientation is " + orientation);
-
-        switch (orientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                return rotate(bm, 0);
-
-            case ExifInterface.ORIENTATION_NORMAL:
-                return rotate(bm, 270);
-
-            case ExifInterface.ORIENTATION_ROTATE_180:
-                return rotate(bm, 180);
-
-            case ExifInterface.ORIENTATION_ROTATE_270:
-                return rotate(bm, 270);
-
-            case ExifInterface.ORIENTATION_UNDEFINED:
-                return rotate(bm, 270);
-
-            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
-                return flip(bm, true, false);
-
-            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-                return flip(bm, false, true);
-
-            default:
-                return bm;
-        }
-    }
 
     // This method should sync all of the notes that are both in the SQLiteDatabase and the notes in Firebase FireStore
     private void updateAllNotesIncludingCloud() {
@@ -729,37 +624,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    //TODO Fix these permission methods later on.
-    private void requestPermissionForWritable() {
-        if (ContextCompat.checkSelfPermission(this,
-                permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSION_WRITE_STORAGE);
-
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_PERMISSION_WRITE_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-        }
-    }
 }

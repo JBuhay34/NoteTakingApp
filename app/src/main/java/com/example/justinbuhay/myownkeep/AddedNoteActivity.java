@@ -2,8 +2,10 @@ package com.example.justinbuhay.myownkeep;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,8 +22,13 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 import static com.example.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
-import static com.example.justinbuhay.myownkeep.MainActivity.NOTE_IMAGE_BITMAP;
+import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_PATH_FOR_PHOTOS;
+import static com.example.justinbuhay.myownkeep.MainActivity.INTENT_DATA;
 
 public class AddedNoteActivity extends AppCompatActivity {
 
@@ -97,9 +104,28 @@ public class AddedNoteActivity extends AppCompatActivity {
         } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             noteImage.setVisibility(View.VISIBLE);
             Log.e(LOG_TAG, "should be visible");
-            Uri bitmapuri = Uri.parse(intent.getStringExtra(NOTE_IMAGE_BITMAP));
 
-            noteImage.setImageURI(bitmapuri);
+            //TODO set this up on an async task, because too much info is being loaded on main thread.
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(AddedNoteActivity.this.getContentResolver(), Uri.parse(intent.getStringExtra(INTENT_DATA)));
+                String pathforbitmap = intent.getStringExtra(IMAGE_PATH_FOR_PHOTOS);
+
+                Log.e(LOG_TAG, "this is the path" + pathforbitmap);
+                Bitmap orientedBitmap = null;
+
+                orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                noteImage.setImageBitmap(orientedBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            //Uri bitmapuri = Uri.parse(intent.getStringExtra(NOTE_IMAGE_BITMAP));
+            //noteImage.setImageURI(bitmapuri);
         }
     }
 
