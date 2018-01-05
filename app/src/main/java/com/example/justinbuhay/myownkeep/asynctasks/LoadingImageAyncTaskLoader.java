@@ -49,6 +49,8 @@ public class LoadingImageAyncTaskLoader extends AsyncTaskLoader<Bitmap> {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             orientedBitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
 
+            bitmap = orientedBitmap;
+
         } catch (IOException e) {
             e.printStackTrace();
         }

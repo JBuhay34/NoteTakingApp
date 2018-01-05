@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFirebaseStorage = FirebaseStorage.getInstance();
 
         mNavView = findViewById(R.id.navigation_view);
-        mLinearLayout = findViewById(R.id.linearLayout);
+        mLinearLayout = findViewById(R.id.mainactivitylinearlayout);
         mProgressBar = findViewById(R.id.progress_bar);
 
         View headerLayout = mNavView.getHeaderView(0);
@@ -285,6 +285,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView.setAdapter(mAdapter);
 
 
+        mLinearLayout.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     // This method sets up the navigation drawer.
@@ -381,9 +383,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // When the user clicks the savebutton after importing a picture with a note
         if (requestCode == ADD_THE_IMAGE_REQUEST) {
+            mLinearLayout.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.GONE);
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Didn't work");
             } else {
+                //TODO Display the note without the imageView then when it is done, add the image.
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
                 Log.e("MainActivity.class", data.getStringExtra("noteDescriptionResult"));
                 final String titleResult = data.getStringExtra("titleResult");
@@ -446,6 +451,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == Activity.RESULT_CANCELED) {
                 makeToast("Cancelled");
             } else {
+                mLinearLayout.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
                 getCameraImage(data);
             }
         } else if (requestCode == NEW_NOTE_REQUEST) {
@@ -515,8 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getCameraImage(Intent data) {
 
         if (data != null) {
-
-            //TODO call the asynctasklaoder to get the image path. then implement all the other lines onto the onLoadFinished.
+            uriFromData = data.getData();
             uriFromData = data.getData();
             getSupportLoaderManager().initLoader(0, null, MainActivity.this).forceLoad();
 

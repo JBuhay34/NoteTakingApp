@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -37,6 +38,7 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
     private String pathforbitmap;
     private Bitmap bitmap;
     private Uri uriForBitmap;
+    private ProgressBar mProgressBar;
 
 
 
@@ -83,6 +85,7 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
 
         noteTitle = findViewById(R.id.titleEditText);
         noteDescription = findViewById(R.id.noteEditText);
+        mProgressBar = findViewById(R.id.mImageProgressBar);
 
         Intent intent = getIntent();
         // Called when the user clicks on an view from the MainActivity.
@@ -101,11 +104,12 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
             // Called when the user clicks on an image from their photos.
         } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             noteImage.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
             Log.e(LOG_TAG, "should be visible");
 
-            //TODO set this up on an async task, because too much info is being loaded on main thread.
             uriForBitmap = Uri.parse(intent.getStringExtra(INTENT_DATA));
             pathforbitmap = intent.getStringExtra(IMAGE_PATH_FOR_PHOTOS);
+
             getSupportLoaderManager().initLoader(0, null, this).forceLoad();
 
         }
@@ -120,6 +124,7 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
     @Override
     public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
         bitmap = data;
+        mProgressBar.setVisibility(View.GONE);
         noteImage.setImageBitmap(bitmap);
     }
 
