@@ -45,6 +45,7 @@ public class Note {
         this.noteImageUUID = noteImageUUID;
     }
 
+
     public String getNoteImageUUID() {
         return noteImageUUID;
     }

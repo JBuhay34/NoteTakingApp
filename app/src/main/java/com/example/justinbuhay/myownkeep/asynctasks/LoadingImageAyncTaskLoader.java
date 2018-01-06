@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.AsyncTaskLoader;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,8 +39,6 @@ public class LoadingImageAyncTaskLoader extends AsyncTaskLoader<Bitmap> {
         try {
             bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uriForBitmap);
 
-
-            Log.e(LOG_TAG, "this is the path" + pathforbitmap);
             Bitmap orientedBitmap = null;
 
             orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());

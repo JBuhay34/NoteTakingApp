@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,7 +25,6 @@ public class HelperMethods {
     public static Bitmap modifyOrientation(String contextname, Bitmap bm, String image_path) throws IOException {
         ExifInterface ei = new ExifInterface(image_path);
         int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        Log.e(contextname, "Orientation is " + orientation);
 
         switch (orientation) {
             case ExifInterface.ORIENTATION_ROTATE_90:

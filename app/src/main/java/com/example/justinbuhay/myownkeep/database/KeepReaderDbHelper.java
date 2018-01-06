@@ -207,7 +207,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                 String notePath = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_PATH));
                 String imageuuid = cursor.getString(cursor.getColumnIndex(NoteTakingEntry.COLUMN_IMAGE_UUID));
 
-                Log.e("KeepReader", uniqueID + notePath + imageuuid);
                 boolean isItAlreadyThere = false;
                 for (Note title : noteTitles) {
                     if (noteTitle.equals(title.getNoteTitle()) && noteDescription.equals(title.getNoteDescription())) {
@@ -217,10 +216,10 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
                 Note newNote;
                 if (notePath == null && imageuuid == null) {
                     newNote = new Note(noteTitle, noteDescription, uniqueID);
-                    Log.e("KeepReaderDbHelper", noteTitle + " there is no image");
+
                 } else {
                     newNote = new Note(noteTitle, noteDescription, uniqueID, notePath, imageuuid);
-                    Log.e("KeepReaderDbHelper", "There is an image");
+
                 }
                 noteTitles.add(newNote);
                 if (!isItAlreadyThere) {

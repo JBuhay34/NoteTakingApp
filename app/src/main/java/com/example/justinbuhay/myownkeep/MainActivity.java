@@ -312,17 +312,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.sign_out_navigation:
-                makeToast("Sign out clicked!!!");
                 Intent intent = new Intent(MainActivity.this, SignInActivity.class);
                 intent.putExtra("signout", 5);
                 startActivity(intent);
                 finish();
                 break;
             case R.id.notes_navigation:
-                makeToast("notes nav clicked");
+                makeToast("Notes nav clicked");
                 break;
             case R.id.settings_navigation:
-                makeToast("settings nav clicked");
+                makeToast("Settings nav clicked");
                 break;
         }
         menuItem.setChecked(true);
@@ -386,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mLinearLayout.setVisibility(View.VISIBLE);
             mProgressBar.setVisibility(View.GONE);
             if (resultCode == Activity.RESULT_CANCELED) {
-                makeToast("Didn't work");
+                makeToast("Cancelled");
             } else {
                 //TODO Display the note without the imageView then when it is done, add the image.
                 Log.e("MainActivity.class", data.getStringExtra("titleResult"));
@@ -414,7 +413,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        Log.e(LOG_TAG, downloadUrl.toString());
                         String noteImageUrl = downloadUrl.toString();
 
                         Map<String, Object> noteToAdd = new HashMap<String, Object>();
@@ -488,7 +486,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (data.getBooleanExtra("update", true) == false) {
 
                     String uniqueStorageID = mAdapter.getmNotes().get(position).getUniqueStorageID();
-                    makeToast("\"" + mAdapter.getmNotes().get(position).getNoteTitle() + "\" deleted");
 
                     mDocumentReference.collection(noteCollection).document(uniqueStorageID).delete();
                     if (mAdapter.getmNotes().get(position).getNoteImageUUID() != null) {
@@ -501,7 +498,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     String title = data.getStringExtra("titleResult");
                     String description = data.getStringExtra("noteDescriptionResult");
-                    Log.i(LOG_TAG, title + description);
 
 
                     Map<String, Object> noteToAdd = new HashMap<String, Object>();
@@ -543,7 +539,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(MainActivity.this.getContentResolver(), uriFromData);
 
 
-            Log.e(LOG_TAG, "this is the path" + pathforbitmap);
             Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
@@ -609,7 +604,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 isItThere = true;
                                 if (notesOnDatabase.size() != 0) {
                                     if (theNote != null && (!theNote.getNoteTitle().equals(newNote2.getNoteTitle()) || !theNote.getNoteDescription().equals(newNote2.getNoteDescription()))) {
-                                        Log.e(LOG_TAG, position + " was changed");
+
                                         databaseHelper.updateNote(databaseHelper.getAllNotes().get(position), newNote2.getNoteTitle(), newNote2.getNoteDescription());
                                     }
                                 }

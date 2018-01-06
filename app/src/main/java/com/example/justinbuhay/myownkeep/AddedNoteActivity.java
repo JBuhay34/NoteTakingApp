@@ -10,7 +10,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -105,7 +104,7 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
         } else if (intent.getIntExtra("requestCode", -1) == ADD_THE_IMAGE_REQUEST) {
             noteImage.setVisibility(View.VISIBLE);
             mProgressBar.setVisibility(View.VISIBLE);
-            Log.e(LOG_TAG, "should be visible");
+
 
             uriForBitmap = Uri.parse(intent.getStringExtra(INTENT_DATA));
             pathforbitmap = intent.getStringExtra(IMAGE_PATH_FOR_PHOTOS);
