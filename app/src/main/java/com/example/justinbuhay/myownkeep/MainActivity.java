@@ -397,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // theImageUUID is the name of the image going into FirebaseStorage
                 final String noteImageUUID = UUID.randomUUID().toString();
                 Log.e(LOG_TAG, noteImageUUID + "Let's see");
-                final String noteImagePath = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + noteImageUUID + ".png";
+                final String noteImagePath = "users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + noteImageUUID + ".jpg";
                 mStorageReference = mFirebaseStorage.getReference(noteImagePath);
 
                 UploadTask uploadTask = mStorageReference.putBytes(data1);
@@ -492,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     mDocumentReference.collection(noteCollection).document(uniqueStorageID).delete();
                     if (mAdapter.getmNotes().get(position).getNoteImageUUID() != null) {
-                        mFirebaseStorage.getReference().child("users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + mAdapter.getmNotes().get(position).getNoteImageUUID() + ".png").delete();
+                        mFirebaseStorage.getReference().child("users/" + mFirebaseAuth.getCurrentUser().getUid() + "/" + mAdapter.getmNotes().get(position).getNoteImageUUID() + ".jpg").delete();
                     }
 
                     //databaseHelper.deleteNote(databaseHelper.getAllNotes().get(position));
@@ -546,7 +546,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e(LOG_TAG, "this is the path" + pathforbitmap);
             Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            orientedBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
 
 
             data1 = baos.toByteArray();

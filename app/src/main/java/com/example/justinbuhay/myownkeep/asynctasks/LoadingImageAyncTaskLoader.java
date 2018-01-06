@@ -47,7 +47,7 @@ public class LoadingImageAyncTaskLoader extends AsyncTaskLoader<Bitmap> {
             orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            orientedBitmap.compress(Bitmap.CompressFormat.PNG, 80, baos);
+            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
 
             bitmap = orientedBitmap;
 
