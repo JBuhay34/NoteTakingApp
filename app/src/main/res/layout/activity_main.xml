@@ -53,7 +53,7 @@
 
             <fragment
                 android:id="@+id/add_note_fragment"
-                android:name="com.example.justinbuhay.myownkeep.AddNoteFragment"
+                android:name="com.justlive.justinbuhay.myownkeep.AddNoteFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

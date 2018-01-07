@@ -1,10 +1,10 @@
-package com.example.justinbuhay.myownkeep.asynctasks;
+package com.justlive.justinbuhay.myownkeep.asynctasks;
 
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.AsyncTaskLoader;
 
-import static com.example.justinbuhay.myownkeep.HelperMethods.getImagePathFromInputStreamUri;
+import static com.justlive.justinbuhay.myownkeep.HelperMethods.getImagePathFromInputStreamUri;
 
 /**
  * Created by jbuha on 1/5/2018.

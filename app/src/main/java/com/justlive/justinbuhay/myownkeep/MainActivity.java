@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep;
+package com.justlive.justinbuhay.myownkeep;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -35,9 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.justinbuhay.myownkeep.asynctasks.GettingImagePathAsyncTaskLoader;
-import com.example.justinbuhay.myownkeep.database.KeepReaderDbHelper;
-import com.example.justinbuhay.myownkeep.glidefeature.CircleTransform;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -50,6 +47,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.justlive.justinbuhay.myownkeep.asynctasks.GettingImagePathAsyncTaskLoader;
+import com.justlive.justinbuhay.myownkeep.database.KeepReaderDbHelper;
+import com.justlive.justinbuhay.myownkeep.glidefeature.CircleTransform;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
+import static com.justlive.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, android.support.v4.app.LoaderManager.LoaderCallbacks<String> {
 

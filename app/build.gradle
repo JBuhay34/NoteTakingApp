@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.1"
     defaultConfig {
-        applicationId "com.example.justinbuhay.myownkeep"
+        applicationId "com.justlive.justinbuhay.myownkeep"
         minSdkVersion 19
         targetSdkVersion 26
         versionCode 1

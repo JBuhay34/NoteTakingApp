@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep;
+package com.justlive.justinbuhay.myownkeep;
 
 import android.content.Context;
 import android.graphics.Bitmap;
