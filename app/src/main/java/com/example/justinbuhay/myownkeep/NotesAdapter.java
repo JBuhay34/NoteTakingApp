@@ -1,4 +1,4 @@
-package com.justlive.justinbuhay.myownkeep;
+package com.example.justinbuhay.myownkeep;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

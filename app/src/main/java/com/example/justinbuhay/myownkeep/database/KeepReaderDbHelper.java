@@ -1,4 +1,4 @@
-package com.justlive.justinbuhay.myownkeep.database;
+package com.example.justinbuhay.myownkeep.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,8 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.justlive.justinbuhay.myownkeep.Note;
-import com.justlive.justinbuhay.myownkeep.database.NoteTakingContract.NoteTakingEntry;
+import com.example.justinbuhay.myownkeep.Note;
+import com.example.justinbuhay.myownkeep.database.NoteTakingContract.NoteTakingEntry;
 
 import java.util.LinkedList;
 import java.util.List;

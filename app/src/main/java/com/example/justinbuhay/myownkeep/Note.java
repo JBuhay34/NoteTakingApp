@@ -1,4 +1,4 @@
-package com.justlive.justinbuhay.myownkeep;
+package com.example.justinbuhay.myownkeep;
 
 /**
  * Created by jbuha on 12/16/2017.

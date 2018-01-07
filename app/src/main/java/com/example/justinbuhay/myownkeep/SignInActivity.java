@@ -1,4 +1,4 @@
-package com.justlive.justinbuhay.myownkeep;
+package com.example.justinbuhay.myownkeep;
 
 import android.content.Intent;
 import android.os.Bundle;
