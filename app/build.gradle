@@ -11,7 +11,7 @@ android {
         config {
             keyAlias 'MemoriesKey'
             keyPassword 'theKey'
-            storeFile file('C:/Users/jbuha/OneDrive/Documents/Programming items/MemoriesApp/memories.jks')
+            storeFile file('C:/Users/jbuha/OneDrive/Documents/Programming items/MemoriesApp/memories1.jks')
             storePassword 'theKey'
         }
     }
