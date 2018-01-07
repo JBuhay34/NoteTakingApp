@@ -1,42 +1,21 @@
 apply plugin: 'com.android.application'
-
 def keystorePropertiesFile = rootProject.file("keystore.properties")
-
 def keystoreProperties = new Properties()
-
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
 android {
+    defaultConfig{
+        minSdkVersion 16
+    }
+
     signingConfigs {
+        compileSdkVersion 26
         config {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
             storeFile file(keystoreProperties['storeFile'])
             storePassword keystoreProperties['storePassword']
-
-
-        }
-        compileSdkVersion 26
-        defaultConfig {
-            applicationId "com.example.justinbuhay.myownkeep"
-            minSdkVersion 19
-            targetSdkVersion 26
-            versionCode 1
-            versionName "1.0"
-            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        }
-        buildTypes {
-            release {
-                minifyEnabled false
-                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-                signingConfig signingConfigs.config
-            }
-            debug {
-                signingConfig signingConfigs.config
-            }
         }
     }
-
     dependencies {
         compile fileTree(include: ['*.jar'], dir: 'libs')
         androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -57,6 +36,15 @@ android {
         compile 'com.github.bumptech.glide:glide:3.5.2'
         testCompile 'junit:junit:4.12'
     }
-
     apply plugin: 'com.google.gms.google-services'
+    buildTypes {
+        release {
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+}
+dependencies {
 }
