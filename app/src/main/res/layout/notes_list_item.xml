@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:elevation="8dp"
         android:padding="16dp"
-        app:cardBackgroundColor="@color/colorPrimaryDark">
+        app:cardBackgroundColor="@color/colorPrimaryDark"
+        app:cardCornerRadius="4dp">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"

@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep.glidefeature;
+package com.justlive.justinbuhay.myownkeep.glidefeature;
 
 /**
  * Created by justinbuhay on 1/4/18.

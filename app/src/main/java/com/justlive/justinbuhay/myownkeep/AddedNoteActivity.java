@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep;
+package com.justlive.justinbuhay.myownkeep;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,11 +20,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.justinbuhay.myownkeep.asynctasks.LoadingImageAyncTaskLoader;
+import com.justlive.justinbuhay.myownkeep.asynctasks.LoadingImageAyncTaskLoader;
 
-import static com.example.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
-import static com.example.justinbuhay.myownkeep.MainActivity.IMAGE_PATH_FOR_PHOTOS;
-import static com.example.justinbuhay.myownkeep.MainActivity.INTENT_DATA;
+import static com.justlive.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
+import static com.justlive.justinbuhay.myownkeep.MainActivity.IMAGE_PATH_FOR_PHOTOS;
+import static com.justlive.justinbuhay.myownkeep.MainActivity.INTENT_DATA;
 
 public class AddedNoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Bitmap> {
 

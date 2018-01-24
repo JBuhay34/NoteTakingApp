@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep.asynctasks;
+package com.justlive.justinbuhay.myownkeep.asynctasks;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,7 +9,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static com.example.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
+import static com.justlive.justinbuhay.myownkeep.HelperMethods.modifyOrientation;
 
 
 /**

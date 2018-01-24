@@ -1,4 +1,4 @@
-package com.example.justinbuhay.myownkeep.database;
+package com.justlive.justinbuhay.myownkeep.database;
 
 import android.provider.BaseColumns;
 
