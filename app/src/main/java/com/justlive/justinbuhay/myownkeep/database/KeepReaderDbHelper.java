@@ -7,7 +7,6 @@ import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.justlive.justinbuhay.myownkeep.Note;
 import com.justlive.justinbuhay.myownkeep.database.NoteTakingContract.NoteTakingEntry;
@@ -101,7 +100,6 @@ public class KeepReaderDbHelper extends SQLiteOpenHelper {
             String[] whereArgs = {noteToDelete.getNoteID() + ""};
             db.delete(NoteTakingEntry.TABLE_NAME, NoteTakingEntry._ID + "= ?", whereArgs);
             db.setTransactionSuccessful();
-            Toast.makeText(mContext, "Note with title " + noteToDelete.getNoteTitle() + " deleted", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.d(TAG, "Error while trying to delete notes");
         } finally {
