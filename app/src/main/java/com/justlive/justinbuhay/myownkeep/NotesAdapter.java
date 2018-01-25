@@ -47,10 +47,22 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.MyViewHolder
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        holder.mNoteTitleTextView.setText(mNotes.get(position).getNoteTitle());
-        holder.mNoteDescriptionTextView.setText(mNotes.get(position).getNoteDescription());
+        String noteTitle = mNotes.get(position).getNoteTitle();
+        String noteDescription = mNotes.get(position).getNoteDescription();
+
+        if ((noteTitle.equals("") || noteTitle == null)) {
+            holder.mNoteTitleTextView.setVisibility(View.GONE);
+        }
+        if ((noteDescription.equals("") || noteDescription == null)) {
+            holder.mNoteTitleTextView.setVisibility(View.GONE);
+        }
+
+        holder.mNoteTitleTextView.setText(noteTitle);
+        holder.mNoteDescriptionTextView.setText(noteDescription);
+
+        holder.mNoteDescriptionTextView.setText(noteDescription);
         if (mNotes.get(position).getNotePath() != null && mNotes.get(position).getNoteImageUUID() != null) {
-            Glide.with(mContext).load(mNotes.get(position).getNotePath()).override(400, 400).centerCrop().into(holder.mNoteImageView);
+            Glide.with(mContext).load(mNotes.get(position).getNotePath()).override(400, 400).into(holder.mNoteImageView);
             holder.mNoteImageView.setVisibility(View.VISIBLE);
         } else {
             holder.mNoteImageView.setVisibility(View.GONE);

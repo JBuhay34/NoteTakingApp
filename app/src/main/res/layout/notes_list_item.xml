@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="8dp"
-        android:padding="16dp"
+        android:padding="8dp"
         app:cardBackgroundColor="@color/colorPrimaryDark"
         app:cardCornerRadius="4dp">
 
@@ -47,9 +47,11 @@
             <ImageView
                 android:id="@+id/image_for_list_item"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:padding="8dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="8"
+                android:paddingBottom="8dp"
                 android:rotation="90"
+                android:src="@mipmap/ic_launcher_round"
                 android:visibility="gone" />
         </LinearLayout>
 

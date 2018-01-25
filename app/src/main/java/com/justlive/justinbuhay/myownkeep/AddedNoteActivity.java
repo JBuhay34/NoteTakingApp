@@ -20,6 +20,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.justlive.justinbuhay.myownkeep.asynctasks.LoadingImageAyncTaskLoader;
 
 import static com.justlive.justinbuhay.myownkeep.MainActivity.ADD_THE_IMAGE_REQUEST;
@@ -94,9 +97,22 @@ public class AddedNoteActivity extends AppCompatActivity implements LoaderManage
             notePosition = intent.getIntExtra("position", -1);
             if (intent.getStringExtra("thePictureURL") != null) {
                 noteImage.setVisibility(View.VISIBLE);
+                mProgressBar.setVisibility(View.VISIBLE);
                 Glide.with(this)
                         .load(intent.getStringExtra("thePictureURL"))
-                        .centerCrop()
+                        .listener(new RequestListener<String, GlideDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                mProgressBar.setVisibility(View.GONE);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                mProgressBar.setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
                         .into(noteImage);
             }
 

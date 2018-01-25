@@ -541,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Bitmap orientedBitmap = modifyOrientation(LOG_TAG, bitmap, pathforbitmap.toString());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 10, baos);
+            orientedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
 
 
             data1 = baos.toByteArray();
